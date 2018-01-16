@@ -22,8 +22,11 @@ public class OtaConstant {
     /**
      * 固件包的下载目录
      */
-    public final static String FILE_FOLDER = TEST ? Environment.getExternalStorageDirectory() + "/ota/" : Environment
-            .getDataDirectory() + File.separator + "media" + File.separator;
+    public final static String FILE_FOLDER = Environment.getDataDirectory() + File.separator + "media" + File.separator;
+    /**
+     * 测试目录-只负责保存文件
+     */
+    public final static String FILE_FOLDER_TEST = Environment.getExternalStorageState() + "/ota";
     /**
      * 固件包的完整名称
      */

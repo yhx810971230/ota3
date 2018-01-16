@@ -214,9 +214,10 @@ public class OtaTool {
 
                 String reqUrl = otaUpgradeUtil.buildUrl(check_package_name, check_version_code, check_mac_address !=
                         null ? check_mac_address.replace(":", "") : "");
-                if (OtaConstant.TEST) {
-                    reqUrl = OtaConstant.TEST_URL;
-                }
+//                //后台下载不使用测试
+//                if (OtaConstant.TEST) {
+//                    reqUrl = OtaConstant.TEST_URL;
+//                }
                 try {
                     String content = otaUpgradeUtil.httpGet(reqUrl);
                     if (!TextUtils.isEmpty(content)) {
