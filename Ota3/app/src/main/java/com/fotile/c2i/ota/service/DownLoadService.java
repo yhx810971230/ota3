@@ -108,84 +108,87 @@ public class DownLoadService extends Service {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             OtaFileInfo otaFileInfo = (OtaFileInfo) msg.obj;
-            String current_act_name = OtaTool.getCurrentActivityName(DownLoadService.this);
-            state = otaFileInfo.fileInfo.getStatus();
-            switch (state) {
-                //准备中
-                case DownloadStatus.START:
-                    show_downing_tip = false;
-                    show_complete_tip = false;
-                    show_error_tip = false;
+            if (null != otaFileInfo && null != otaFileInfo.fileInfo) {
+                String current_act_name = OtaTool.getCurrentActivityName(DownLoadService.this);
+                state = otaFileInfo.fileInfo.getStatus();
+                switch (state) {
+                    //准备中
+                    case DownloadStatus.START:
+                        show_downing_tip = false;
+                        show_complete_tip = false;
+                        show_error_tip = false;
 
-                    DownloadAction.getInstance().reciverData(otaFileInfo);
-                    break;
-                //下载中
-                case DownloadStatus.DOWNLOADING:
-                    //show_downing_tip = false;
-                    show_complete_tip = false;
-                    show_error_tip = false;
+                        DownloadAction.getInstance().reciverData(otaFileInfo);
+                        break;
+                    //下载中
+                    case DownloadStatus.DOWNLOADING:
+                        //show_downing_tip = false;
+                        show_complete_tip = false;
+                        show_error_tip = false;
 
-                    DownloadAction.getInstance().reciverData(otaFileInfo);
-                    //如果页面离开设置界面
-                    if (!current_act_name.contains("SettingActivity") && !show_downing_tip) {
-                        show_downing_tip = true;
-                        OtaTopSnackBar.make(DownLoadService.this, "后台持续下载升级包", OtaTopSnackBar.LENGTH_LONG).show();
-                    }
-                    break;
-                //完成
-                case DownloadStatus.COMPLETE:
-                    show_downing_tip = false;
-                    //show_complete_tip = false;
-                    show_error_tip = false;
+                        DownloadAction.getInstance().reciverData(otaFileInfo);
+                        //如果页面离开设置界面
+                        if (!current_act_name.contains("SettingActivity") && !show_downing_tip) {
+                            show_downing_tip = true;
+                            OtaTopSnackBar.make(DownLoadService.this, "后台持续下载升级包", OtaTopSnackBar.LENGTH_LONG).show();
+                        }
+                        break;
+                    //完成
+                    case DownloadStatus.COMPLETE:
+                        show_downing_tip = false;
+                        //show_complete_tip = false;
+                        show_error_tip = false;
 
-                    //md5校验，防止断点下载出错
-                    File file = new File(fileName);
-                    if (file.exists()) {
-                        OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
-                        //本地文件MD5
-                        String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
-                        if (!md5.equals(filemd5)) {
-                            OtaLog.LOGOta("下载完成", "MD5校验失败");
-                            if (!show_complete_tip) {
-                                show_complete_tip = true;
-                                OtaTopSnackBar.make(DownLoadService.this, "文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
-                                        .LENGTH_LONG).show();
+                        //md5校验，防止断点下载出错
+                        File file = new File(fileName);
+                        if (file.exists()) {
+                            OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
+                            //本地文件MD5
+                            String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
+                            if (!md5.equals(filemd5)) {
+                                OtaLog.LOGOta("下载完成", "MD5校验失败");
+                                if (!show_complete_tip) {
+                                    show_complete_tip = true;
+                                    OtaTopSnackBar.make(DownLoadService.this, "文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
+                                            .LENGTH_LONG).show();
+                                }
+                            }
+                            //md5校验正确
+                            else {
+                                //如果页面离开设置界面
+                                if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
+                                    show_complete_tip = true;
+                                    OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
+                                            .LENGTH_LONG).show();
+                                }
+                                DownloadAction.getInstance().reciverData(otaFileInfo);
                             }
                         }
-                        //md5校验正确
-                        else {
-                            //如果页面离开设置界面
-                            if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
-                                show_complete_tip = true;
-                                OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
-                                        .LENGTH_LONG).show();
-                            }
-                            DownloadAction.getInstance().reciverData(otaFileInfo);
-                        }
-                    }
-                    break;
-                //报错
-                case DownloadStatus.ERROR:
-                    show_downing_tip = false;
-                    show_complete_tip = false;
-                    // show_error_tip = false;
+                        break;
+                    //报错
+                    case DownloadStatus.ERROR:
+                        show_downing_tip = false;
+                        show_complete_tip = false;
+                        // show_error_tip = false;
 
-                    uiHandler.sendEmptyMessageDelayed(1, 1000);
-                    break;
-                //报错
-                case ERROR_DELAY_CODE:
-                    DownloadAction.getInstance().reciverData(otaFileInfo);
-                    if (!show_error_tip) {
-                        show_error_tip = true;
-                        //如果是网络造成的下载失败
-                        if (!OtaTool.isNetworkAvailable(DownLoadService.this)) {
-                            OtaTopSnackBar.make(DownLoadService.this, "网络断开，下载暂停，请恢复网络", OtaTopSnackBar.LENGTH_LONG)
-                                    .show();
-                        } else {
-                            OtaTopSnackBar.make(DownLoadService.this, "下载未成功，请重新下载", OtaTopSnackBar.LENGTH_LONG).show();
+                        uiHandler.sendEmptyMessageDelayed(1, 1000);
+                        break;
+                    //报错
+                    case ERROR_DELAY_CODE:
+                        DownloadAction.getInstance().reciverData(otaFileInfo);
+                        if (!show_error_tip) {
+                            show_error_tip = true;
+                            //如果是网络造成的下载失败
+                            if (!OtaTool.isNetworkAvailable(DownLoadService.this)) {
+                                OtaTopSnackBar.make(DownLoadService.this, "网络断开，下载暂停，请恢复网络", OtaTopSnackBar
+                                        .LENGTH_LONG).show();
+                            } else {
+                                OtaTopSnackBar.make(DownLoadService.this, "下载未成功，请重新下载", OtaTopSnackBar.LENGTH_LONG)
+                                        .show();
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
         }
     };
