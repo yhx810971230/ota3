@@ -14,14 +14,13 @@ public class OtaConstant {
      */
     public static boolean TEST = true;
 
-    public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i" + "" +
-            ".sterilizer&version=C2SL-SA111&mac=00259219e046";
+    public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i.sterilizer&version=C2SL-SA111&mac=00259219e046";
     /**
      * OTA升级包文件名称
      */
     public final static String OTANAME = "update.zip";
 
-    public final static String FILE_FOLDER_TEST = Environment.getExternalStorageState() + "/ota";
+    public final static String FILE_FOLDER_TEST = Environment.getExternalStorageState() + "/ota/";
     /**
      * 固件包的下载目录
      */

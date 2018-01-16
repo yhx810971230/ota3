@@ -32,7 +32,7 @@ public class DownLoadService extends Service {
     /**
      * 固件包的保存目录
      */
-    private final String fileFolder = OtaConstant.FILE_FOLDER;
+    private String fileFolder = OtaConstant.FILE_FOLDER;
     /**
      * 固件包的保存完整名称
      */
