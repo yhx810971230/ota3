@@ -20,7 +20,7 @@ public class OtaConstant {
      */
     public final static String OTANAME = "update.zip";
 
-    public final static String FILE_FOLDER_TEST = Environment.getExternalStorageState() + "/ota/";
+    public final static String FILE_FOLDER_TEST = Environment.getExternalStorageDirectory().getPath() + "/ota/";
     /**
      * 固件包的下载目录
      */
