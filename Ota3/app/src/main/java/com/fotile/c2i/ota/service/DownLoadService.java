@@ -19,6 +19,8 @@ import com.fotile.c2i.ota.util.OtaTool;
 import com.fotile.c2i.ota.util.OtaUpgradeUtil;
 import com.fotile.c2i.ota.view.OtaTopSnackBar;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.math.BigDecimal;
 
@@ -36,12 +38,28 @@ public class DownLoadService extends Service {
     /**
      * 固件包的保存完整名称
      */
-    private final String fileName = OtaConstant.FILE_NAME;
+    private final String file_name_ota = OtaConstant.FILE_NAME_OTA;
+    /**
+     * mcu包的完整名称
+     */
+    private final String file_name_mcu = OtaConstant.FILE_NAME_MCU;
     /**
      * 文件下载地址
      */
     private String url;
     private String md5;
+    /**
+     * mcu url
+     */
+    private String ex_url;
+    /**
+     * mcu md5
+     */
+    private String ex_md5;
+    /**
+     * 是否只有固件包
+     */
+    private boolean packageOnly = false;
 
     private static int state = DownloadStatus.NORMAL;
 
@@ -70,7 +88,20 @@ public class DownLoadService extends Service {
         initData();
         url = intent.getExtras().getString("url");
         md5 = intent.getExtras().getString("md5");
-        startDownload();
+        ex_url = intent.getExtras().getString("ex_url");
+        ex_md5 = intent.getExtras().getString("ex_md5");
+
+        //如果mcu url为空，判断为只下载ota包
+        if (TextUtils.isEmpty(ex_url)) {
+            packageOnly = true;
+            startDownload();
+            OtaLog.LOGOta("只下载ota包", "只下载ota包");
+        } else {
+            packageOnly = false;
+            startMcuDownload();
+            OtaLog.LOGOta("下载mcu包", "下载mcu包");
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -86,20 +117,38 @@ public class DownLoadService extends Service {
         }
     }
 
+    /**
+     * 开始下载固件包
+     */
     private void startDownload() {
         if (!TextUtils.isEmpty(url)) {
             state = DownloadStatus.NORMAL;
             OtaLog.LOGOta("下载Ota包url", url);
-            OtaLog.LOGOta("下载Ota包保存的本地路径", fileName);
+            OtaLog.LOGOta("下载Ota包保存的本地路径", file_name_ota);
             //开始下载
             FileDownloader.start(url, OtaConstant.OTANAME, new ListenerWrapper());
         }
     }
 
+    /**
+     * 开启下载mcu
+     */
+    private void startMcuDownload() {
+        if (!TextUtils.isEmpty(ex_url)) {
+            state = DownloadStatus.NORMAL;
+            OtaLog.LOGOta("下载mcu包url", ex_url);
+            OtaLog.LOGOta("下载mcu包保存的本地路径", file_name_mcu);
+            //开始下载
+            FileDownloader.start(ex_url, OtaConstant.OTANAME_MCU, new ListenerWrapper());
+        }
+    }
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         FileDownloader.cancel(url);
+        FileDownloader.cancel(ex_url);
         state = DownloadStatus.NORMAL;
     }
 
@@ -139,22 +188,10 @@ public class DownLoadService extends Service {
                         //show_complete_tip = false;
                         show_error_tip = false;
 
-                        //md5校验，防止断点下载出错
-                        File file = new File(fileName);
-                        if (file.exists()) {
-                            OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
-                            //本地文件MD5
-                            String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
-                            if (!md5.equals(filemd5)) {
-                                OtaLog.LOGOta("下载完成", "MD5校验失败");
-                                if (!show_complete_tip) {
-                                    show_complete_tip = true;
-                                    OtaTopSnackBar.make(DownLoadService.this, "文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
-                                            .LENGTH_LONG).show();
-                                }
-                            }
-                            //md5校验正确
-                            else {
+                        //固件包下载完成--可能下载了mcu
+                        if (packageOnly) {
+                            //校验成功
+                            if (checkOtamd5()) {
                                 //如果页面离开设置界面
                                 if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
                                     show_complete_tip = true;
@@ -162,6 +199,33 @@ public class DownLoadService extends Service {
                                             .LENGTH_LONG).show();
                                 }
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
+                            }
+                            //校验失败
+                            else {
+                                OtaLog.LOGOta("下载完成", "固件包md5校验失败");
+                                if (!show_complete_tip) {
+                                    show_complete_tip = true;
+                                    OtaTopSnackBar.make(DownLoadService.this, "固件包文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
+                                            .LENGTH_LONG).show();
+                                }
+                            }
+
+                        }
+                        //mcu下载完成，开始下载固件包
+                        else {
+                            //md5校验成功才会去执行下载固件包
+                            if (checkMcumd5()) {
+                                packageOnly = true;
+                                startDownload();
+                            }
+                            //校验失败
+                            else {
+                                OtaLog.LOGOta("下载完成", "mcu包md5校验失败");
+                                if (!show_complete_tip) {
+                                    show_complete_tip = true;
+                                    OtaTopSnackBar.make(DownLoadService.this, "mcu文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
+                                            .LENGTH_LONG).show();
+                                }
                             }
                         }
                         break;
@@ -192,6 +256,44 @@ public class DownLoadService extends Service {
             }
         }
     };
+
+    /**
+     * 校验ota的md5
+     *
+     * @return
+     */
+    private boolean checkOtamd5() {
+        //ota md5校验，防止断点下载出错
+        boolean check_md5_ota = false;
+        File file_ota = new File(file_name_ota);
+        if (file_ota.exists()) {
+            String str_md5_ota = new OtaUpgradeUtil().md5sum(file_ota.getPath());
+            if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(md5)) {
+                check_md5_ota = true;
+                OtaLog.LOGOta("固件包md5校验成功", "true");
+            }
+        }
+        return check_md5_ota;
+    }
+
+    /**
+     * 校验mcu的md5
+     *
+     * @return
+     */
+    private boolean checkMcumd5() {
+        //mcu md5校验，防止断点下载出错
+        boolean check_md5_mcu = false;
+        File file_mcu = new File(file_name_mcu);
+        if (file_mcu.exists()) {
+            String str_md5_mcu = new OtaUpgradeUtil().md5sum(file_mcu.getPath());
+            if (!TextUtils.isEmpty(str_md5_mcu) && str_md5_mcu.equals(ex_md5)) {
+                check_md5_mcu = true;
+                OtaLog.LOGOta("mcu包md5校验成功", "true");
+            }
+        }
+        return check_md5_mcu;
+    }
 
     /**
      * 监听器封装类

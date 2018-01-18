@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="downloaderlib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/downloaderlib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

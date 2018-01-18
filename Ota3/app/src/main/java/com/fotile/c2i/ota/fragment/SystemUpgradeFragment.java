@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -242,23 +243,13 @@ public class SystemUpgradeFragment extends Fragment {
         cancelNetTimer();
     }
 
-    /**
-     * 判断ota文件是否存在
-     *
-     * @return
-     */
-    public boolean checkDownloadFileExists() {
-        File file = new File(OtaConstant.FILE_NAME);
-        return file.exists();
-    }
-
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             //针对清空缓存逻辑
             if (!is_loading_version_data) {
                 int state = DownLoadService.getDownLoadState();
-                //判断后台下载完成，文件已经保存了一份
+                //如果文件不存在，并且服务状态是完成状态，表示下载完了被清空了
                 if (!checkDownloadFileExists() && state == DownloadStatus.COMPLETE) {
                     showView(1);
                     startInitLogic();
@@ -317,11 +308,9 @@ public class SystemUpgradeFragment extends Fragment {
             public void onClick(View view) {
                 if (OtaTool.fastclick()) {
                     if (OtaTool.isNetworkAvailable(getActivity()) && null != mInfo) {
-                        if (null != otaListener && !otaListener.isWorking()) {
-                            startDownLoadService();
-                            lay_upgrade.setVisibility(View.VISIBLE);
-                            lay_version.setVisibility(View.GONE);
-                        }
+                        startDownLoadService();
+                        lay_upgrade.setVisibility(View.VISIBLE);
+                        lay_version.setVisibility(View.GONE);
                     } else {
                         OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
                     }
@@ -332,9 +321,11 @@ public class SystemUpgradeFragment extends Fragment {
         btn_upgrade_now.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //如果设备没有工作中，才执行ota
-                if (null != otaListener && !otaListener.isWorking()) {
-                    upgrade();
+                if (null != otaListener && null != mInfo) {
+                    if (OtaTool.fastclick()) {
+                        boolean contain_mcu = TextUtils.isEmpty(mInfo.ex_url) ? false : true;
+                        otaListener.onInstallNow(contain_mcu);
+                    }
                 }
             }
         });
@@ -342,8 +333,11 @@ public class SystemUpgradeFragment extends Fragment {
         btn_upgrade_later.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (null != otaListener) {
-                    otaListener.onInstallLater();
+                if (null != otaListener && null != mInfo) {
+                    if (OtaTool.fastclick()) {
+                        boolean contain_mcu = TextUtils.isEmpty(mInfo.ex_url) ? false : true;
+                        otaListener.onInstallLater(contain_mcu);
+                    }
                 }
             }
         });
@@ -365,14 +359,6 @@ public class SystemUpgradeFragment extends Fragment {
         }
     }
 
-    /**
-     * 升级
-     */
-    private void upgrade() {
-        Intent otaIntent = new Intent("com.cvte.androidsystemtoolbox.action.SYSTEM_UPGRADE");
-        otaIntent.putExtra("path", OtaConstant.FILE_NAME);//data/media/update.zip
-        getActivity().sendBroadcast(otaIntent);
-    }
 
     /**
      * 根据获取到的版本信息，来显示版本相关view
@@ -525,6 +511,8 @@ public class SystemUpgradeFragment extends Fragment {
             Intent intent = new Intent(getActivity(), DownLoadService.class);
             intent.putExtra("url", mInfo.url);
             intent.putExtra("md5", mInfo.md5);
+            intent.putExtra("ex_url", mInfo.ex_url);
+            intent.putExtra("ex_md5", mInfo.ex_md5);
             getActivity().startService(intent);
         }
     }
@@ -559,7 +547,7 @@ public class SystemUpgradeFragment extends Fragment {
                         updateDownloadValue(VIEW_DOWN_ERROR);
                     }
                     //判断后台下载完成，文件已经保存了一份
-                    if (checkDownloadCompleted() && null != otaListener) {
+                    if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) {
                         otaListener.onDownloadCompleted(mInfo.name);
                         showView(2);
                     }
@@ -592,22 +580,18 @@ public class SystemUpgradeFragment extends Fragment {
         }).start();
     }
 
+
     /**
-     * 校验文件是否下载完成或者已经下载过了
+     * 判断ota文件是否存在--包含mcu文件，两个文件只要有一个存在就存在
      *
      * @return
      */
-    public boolean checkDownloadCompleted() {
-        File file = new File(OtaConstant.FILE_NAME);
-        if (file.exists()) {
-            //本地文件md5
-            String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
-            if (null != mInfo && filemd5.equals(mInfo.md5)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean checkDownloadFileExists() {
+        File file_ota = new File(OtaConstant.FILE_NAME_OTA);
+        File file_mcu = new File(OtaConstant.FILE_NAME_MCU);
+        return file_ota.exists() || file_mcu.exists();
     }
+
 
     /**
      * 获取OTA服务器上的固件的信息

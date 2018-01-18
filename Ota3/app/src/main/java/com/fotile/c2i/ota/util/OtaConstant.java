@@ -12,13 +12,18 @@ public class OtaConstant {
     /**
      * 打包改为false
      */
-    public static boolean TEST = false;
+    public static boolean TEST = true;
 
-    public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i.sterilizer&version=C2SL-SA111&mac=00259219e046";
+    public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i" +
+            ".sterilizer&version=C2SL-SA111&mac=00259219e046";
     /**
      * OTA升级包文件名称
      */
     public final static String OTANAME = "update.zip";
+    /**
+     * MCU升级包文件名称
+     */
+    public final static String OTANAME_MCU = "mcu.bin";
 
     public final static String FILE_FOLDER_TEST = Environment.getExternalStorageDirectory().getPath() + "/ota/";
     /**
@@ -30,7 +35,12 @@ public class OtaConstant {
     /**
      * 固件包的完整名称
      */
-    public final static String FILE_NAME = FILE_FOLDER + OTANAME;
+    public final static String FILE_NAME_OTA = FILE_FOLDER + OTANAME;
+    /**
+     * mcu包的完整名称
+     */
+    public final static String FILE_NAME_MCU = FILE_FOLDER + OTANAME_MCU;
+
     /**
      * OTA解密密码
      */

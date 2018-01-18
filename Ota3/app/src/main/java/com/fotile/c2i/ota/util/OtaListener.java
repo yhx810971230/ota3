@@ -5,16 +5,10 @@ package com.fotile.c2i.ota.util;
  */
 
 public interface OtaListener {
-    /**
-     * 返回设备工作状态
-     *
-     * @return
-     */
-    abstract boolean isWorking();
 
     abstract void onDownloadCompleted(String newVersion);
 
-//    abstract void onInstallNow();
+    abstract void onInstallNow(boolean containMcu);
 
-    abstract void onInstallLater();
+    abstract void onInstallLater(boolean containMcu);
 }

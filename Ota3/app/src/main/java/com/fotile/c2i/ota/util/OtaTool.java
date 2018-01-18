@@ -70,6 +70,47 @@ public class OtaTool {
         return thinBoldFace;
     }
 
+
+    /**
+     * 根据md5校验文件是否下载完成或者已经下载过了--包含mcu文件，只有两个文件md5校验都通过了才返回true
+     *
+     * @return
+     */
+    public static boolean checkDownloadFileMd5(UpgradeInfo mInfo) {
+        if (null == mInfo) {
+            return false;
+        }
+        OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
+
+        //判断ota文件是否完整下载过了
+        boolean file_exist_ota = false;
+        File file_ota = new File(OtaConstant.FILE_NAME_OTA);
+        if (file_ota.exists()) {
+            //本地文件md5
+            String str_md5_ota = otaUpgradeUtil.md5sum(file_ota.getPath());
+            if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(mInfo.md5)) {
+                file_exist_ota = true;
+            }
+        }
+        //判断mcu文件是否完整下载过了
+        boolean file_exist_mcu = false;
+        File file_mcu = new File(OtaConstant.FILE_NAME_MCU);
+        if (file_mcu.exists()) {
+            //本地md5
+            String str_md5_mcu = otaUpgradeUtil.md5sum(file_mcu.getPath());
+            if (!TextUtils.isEmpty(str_md5_mcu) && str_md5_mcu.equals(mInfo.ex_md5)) {
+                file_exist_mcu = true;
+            }
+        }
+
+        //如果包括mcu
+        if (!TextUtils.isEmpty(mInfo.ex_md5)) {
+            return file_exist_mcu && file_exist_ota;
+        } else {
+            return file_exist_ota;
+        }
+    }
+
     //获取amc地址
     public static String getLocalMacAddress() {
         String macSerial = null;
@@ -237,7 +278,7 @@ public class OtaTool {
                     //判断本地文件md5和网络接口获取的是否一样，不一样才执行下载
                     boolean md5_like = false;
                     //判断下载完成，文件已经保存了一份
-                    File file = new File(OtaConstant.FILE_NAME);
+                    File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
                         String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {

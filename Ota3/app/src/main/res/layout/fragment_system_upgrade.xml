@@ -96,10 +96,10 @@
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="20dp"
                 android:layout_marginTop="20dp"
-                app:progress_reached_bar_height="10dp"
+                app:progress_reached_bar_height="12dp"
                 app:progress_reached_color="#e1c79b"
                 app:progress_text_color="#e1c79b"
-                app:progress_text_size="20sp"
+                app:progress_text_size="16sp"
                 app:progress_unreached_bar_height="15dp"
                 app:progress_unreached_color="#949292"/>
         </LinearLayout>

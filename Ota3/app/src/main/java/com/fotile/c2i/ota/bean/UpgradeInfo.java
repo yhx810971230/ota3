@@ -18,9 +18,11 @@ public class UpgradeInfo implements Serializable {
     public String code; // 预留字段，默认为1
     public String packagename; // 包名
     public String md5; // 文件md5
+    public String ex_md5; // MCU文件md5
     public String comment; // 升级说明
     public String size; // 升级包文件大小
     public String url; // 升级包下载地址
+    public String ex_url; // 电源板升级包下载地址
     public String version; // 返回的升级版本号
     public String forversion; // 可升级此版本固件的版本，如果返回非空，则代表差分包，如果为空，则为全包
     public String upgradeType; // 升级类型，0：强制升级，1：推荐升级
