@@ -12,7 +12,7 @@ public class OtaConstant {
     /**
      * 打包改为false
      */
-    public static boolean TEST = true;
+    public static boolean TEST = false;
 
     public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i" +
             ".sterilizer&version=C2SL-SA111&mac=00259219e046";
