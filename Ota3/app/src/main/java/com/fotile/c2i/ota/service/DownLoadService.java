@@ -12,14 +12,12 @@ import com.dl7.downloaderlib.DownloadListener;
 import com.dl7.downloaderlib.FileDownloader;
 import com.dl7.downloaderlib.entity.FileInfo;
 import com.dl7.downloaderlib.model.DownloadStatus;
-import com.fotile.c2i.ota.util.OtaConstant;
 import com.fotile.c2i.ota.bean.OtaFileInfo;
+import com.fotile.c2i.ota.util.OtaConstant;
 import com.fotile.c2i.ota.util.OtaLog;
 import com.fotile.c2i.ota.util.OtaTool;
 import com.fotile.c2i.ota.util.OtaUpgradeUtil;
 import com.fotile.c2i.ota.view.OtaTopSnackBar;
-
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -69,10 +67,7 @@ public class DownLoadService extends Service {
     private boolean show_downing_tip = false;
     private boolean show_complete_tip = false;
     private boolean show_error_tip = false;
-    /**
-     * 网络断开的时候不会立马检测到，所以要延迟
-     */
-    public static final int ERROR_DELAY_CODE = 1001;
+
 
     @Override
     public void onCreate() {
@@ -191,8 +186,12 @@ public class DownLoadService extends Service {
                         //固件包下载完成--可能下载了mcu
                         if (packageOnly) {
                             //校验成功
+                            if(!checkOtafile()){ //这里是刚刚下载完mcu 然后进入这边  文件还不存在，会导致进入校验失败逻辑
+                                return;
+                            }
                             if (checkOtamd5()) {
                                 //如果页面离开设置界面
+                                OtaTool.setLastUpdateVersion(getApplicationContext(),"yes");
                                 if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
                                     show_complete_tip = true;
                                     OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
@@ -202,7 +201,7 @@ public class DownLoadService extends Service {
                             }
                             //校验失败
                             else {
-                                OtaLog.LOGOta("下载完成", "固件包md5校验失败");
+                                OtaLog.LOGOta("下载完成", "=========== 固件包md5校验失败");
                                 if (!show_complete_tip) {
                                     show_complete_tip = true;
                                     OtaTopSnackBar.make(DownLoadService.this, "固件包文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
@@ -220,7 +219,7 @@ public class DownLoadService extends Service {
                             }
                             //校验失败
                             else {
-                                OtaLog.LOGOta("下载完成", "mcu包md5校验失败");
+                                OtaLog.LOGOta("下载完成", "========= mcu包md5校验失败");
                                 if (!show_complete_tip) {
                                     show_complete_tip = true;
                                     OtaTopSnackBar.make(DownLoadService.this, "mcu文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
@@ -235,10 +234,6 @@ public class DownLoadService extends Service {
                         show_complete_tip = false;
                         // show_error_tip = false;
 
-                        uiHandler.sendEmptyMessageDelayed(1, 1000);
-                        break;
-                    //报错
-                    case ERROR_DELAY_CODE:
                         DownloadAction.getInstance().reciverData(otaFileInfo);
                         if (!show_error_tip) {
                             show_error_tip = true;
@@ -252,8 +247,10 @@ public class DownLoadService extends Service {
                             }
                         }
                         break;
+
                 }
             }
+
         }
     };
 
@@ -264,16 +261,28 @@ public class DownLoadService extends Service {
      */
     private boolean checkOtamd5() {
         //ota md5校验，防止断点下载出错
+
         boolean check_md5_ota = false;
         File file_ota = new File(file_name_ota);
+        OtaLog.LOGOta("=====","===========当前的"+md5 + "文件的是否存在:"+file_ota.exists());
         if (file_ota.exists()) {
             String str_md5_ota = new OtaUpgradeUtil().md5sum(file_ota.getPath());
+            OtaLog.LOGOta("=====","===========当前的"+md5 + "文件的md5:"+str_md5_ota);
             if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(md5)) {
                 check_md5_ota = true;
                 OtaLog.LOGOta("固件包md5校验成功", "true");
             }
         }
+        OtaLog.LOGOta("=====","===========当前的返回结果"+check_md5_ota);
         return check_md5_ota;
+    }
+    //判断ota文件是否存在
+    private boolean checkOtafile() {
+        //ota md5校验，防止断点下载出错
+
+        boolean file_exists = false;
+        File file_ota = new File(file_name_ota);
+        return  file_ota.exists();
     }
 
     /**
@@ -344,7 +353,11 @@ public class DownLoadService extends Service {
             OtaLog.LOGOta("InstallAc", "ListenerWrapper = 失败了--->" + fileInfo.getStatus() + ":" + s);
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
-            uiHandler.sendMessage(msg);
+            //这里需要延时1秒
+            /**
+             * 网络断开的时候不会立马检测到，所以要延迟
+             */
+            uiHandler.sendMessageDelayed(msg,1000);
         }
     }
 

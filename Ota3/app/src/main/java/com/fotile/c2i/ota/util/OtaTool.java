@@ -4,9 +4,11 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 
 import com.fotile.c2i.ota.bean.UpgradeInfo;
@@ -14,7 +16,6 @@ import com.fotile.c2i.ota.service.DownLoadService;
 import com.fotile.c2i.ota.service.DownloadAction;
 import com.google.gson.Gson;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -26,11 +27,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.fotile.c2i.ota.fragment.SystemUpgradeFragment.NO_INVALID_PACKAGE;
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by yaohx on 2017/12/25.
@@ -46,6 +46,13 @@ public class OtaTool {
 
     private static long last_time = 0;
 
+    /**最多的分散时间*/
+    private static int MAX_TIME_RANDOM = 7200;
+
+    private static String LAST_UPDATE_VERSION ="last_update_version";
+    private static String VERSION = "version";
+    private static String ISDOWM = "isdown";
+    private static String COMMENT = "comment";
     /**
      * 限制按钮的快速点击情况
      *
@@ -69,7 +76,6 @@ public class OtaTool {
     public static Typeface getTypeface() {
         return thinBoldFace;
     }
-
 
     /**
      * 根据md5校验文件是否下载完成或者已经下载过了--包含mcu文件，只有两个文件md5校验都通过了才返回true
@@ -110,6 +116,7 @@ public class OtaTool {
             return file_exist_ota;
         }
     }
+
 
     //获取amc地址
     public static String getLocalMacAddress() {
@@ -221,8 +228,11 @@ public class OtaTool {
                 if (null == timer_download) {
                     OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
                     //获取一个随机数，随机数之后开启线程
-                    long random_count = (long) (Math.random() * 3600 * 1000 * 2);
 
+                    long random_count = (long) OtaTool.randomByMac(7200);
+                    if(random_count == 0){
+                        random_count = (long)(Math.random() * 3600 * 1000 * 2);
+                    }
                     timer_download = new Timer();
                     timer_download.schedule(new TimerTask() {
                         @Override
@@ -300,5 +310,86 @@ public class OtaTool {
                 }
             }
         }).start();
+    }
+    public static int randomByMac(int max_time){
+        if(max_time<=0 || max_time>MAX_TIME_RANDOM){
+            max_time=MAX_TIME_RANDOM;
+        }
+        String mac = OtaTool.getLocalMacAddress();
+        if(TextUtils.isEmpty(mac)){
+            return 0;
+        }else {
+            mac = mac.substring(6,12);
+        }
+        OtaLog.LOGOta("===========","========mac = "+mac+"==== time"+Integer.parseInt(mac ,16)%max_time);
+        return Integer.parseInt(mac ,16)%max_time;
+
+    }
+    /**  获取wifi状态*/
+    public static int getWifiState(final Context context){
+        int wifiState = -1;
+        WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+
+        if(wifiManager != null){
+
+            wifiState = wifiManager.getWifiState();
+
+           }
+        return wifiState;
+    }
+    /**设置最新版本**/
+    public static void setLastUpdateVersion(final Context context, UpgradeInfo upgradeInfo, String isdown){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(VERSION,upgradeInfo.version);
+        editor.putString(ISDOWM,isdown);
+        editor.putString(COMMENT,upgradeInfo.comment);
+        editor.apply();
+        editor.commit();
+    }
+    /**设置最新版本**/
+    public static void setLastUpdateVersion(final Context context,String isdown){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(ISDOWM,isdown);
+        editor.apply();
+        editor.commit();
+    }
+    /**获取最新版本**/
+    public static String getLastUpdateVersion(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        return sharedPreferences.getString(VERSION,"");
+    }
+    /**获取是否下载**/
+    public static String getLastUpdateState(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        return sharedPreferences.getString(ISDOWM,"no");
+    }
+    /**
+     * 校验文件是否下载完成或者已经下载过了
+     *
+     * @return
+     */
+    public static boolean checkFiles() {
+        File file = new File(OtaConstant.FILE_NAME_OTA);
+        return file.exists();
+    }
+
+    /**
+     *判断是否要显示小红点，逻辑，不需要进入设置界面。
+     * @writer panyw
+     * @param context
+     * @return
+     */
+    public static boolean showTips (final Context context){
+        if(getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100"))){
+            File file = new File(OtaConstant.FILE_NAME_OTA);
+            if(file.exists()){
+                file.delete();
+            }
+        }
+        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && getLastUpdateState(context).equals("yes") && checkFiles());
+        OtaLog.LOGOta("====","========== 是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
+        return flag;
     }
 }

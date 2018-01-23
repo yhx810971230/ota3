@@ -3,6 +3,7 @@ package com.fotile.c2i.ota.fragment;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -10,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -36,7 +36,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -48,74 +47,58 @@ import java.util.TimerTask;
  */
 
 public class SystemUpgradeFragment extends Fragment {
-    /**********************************更新view相关控件*******************************/
     /**
-     * 更新按钮
+     * 无更新版本布局  2
      */
-    Button btn_upgrade;
-
+    RelativeLayout layout_no_upgrade;
     /**
-     * 更新进度条view
+     * 下载中布局
      */
-    LinearLayout lay_upgrade;
+    RelativeLayout layout_upgrading;
     /**
-     * 版本信息view
-     */
-    RelativeLayout lay_version;
-
-    /**
-     * view中间的版本信息文本
-     */
-    TextView txt_version_info;
-    /**
-     * 底部老版本提示
-     */
-    TextView tv_old_version_tip;
-
-    /**
-     * 下载固件包提示
-     */
-    TextView tv_tips;
-    /**
-     * 下载进度条
-     */
-    HorizontalProgressBarWithNumber pbar_download;
-    /**
-     * 加载提示
+     * 检测中布局 8
      */
     RelativeLayout lay_laoding;
-    OtaLoadingView img_loading;
-    /**********************************更新view相关控件*******************************/
-
     /**
-     * 升级view界面
-     */
-    RelativeLayout layout_main_upgrade;
-    /**
-     * 下载完成view界面
+     * 有 新版本    重试    下载完成 布局
      */
     RelativeLayout layout_main_completed;
-
-    /**********************************下载完成view相关控件↓*******************************/
     /**
-     * 更新标题
+     * wifi 为打开界面
      */
-    TextView txt_update_version;
+    RelativeLayout layout_error;
     /**
-     * 更新内容
+     * 查询失败界面
      */
-    TextView tv_update_comment;
-    /**
-     * 立即更新
-     */
+    RelativeLayout layout_error_connect;
+    /***********************************************   无新版本界面 ******************************************/
+    TextView txt_version_info;
+    /***********************************************   下载中界面 ******************************************/
+    /** 进度条 **/
+    HorizontalProgressBarWithNumber pbar_download;
+    /** 下载提示 **/
+    TextView tv_tips;
+    /***********************************************   检测中界面 ******************************************/
+    /** 加载中动画 **/
+    OtaLoadingView img_loading;
+    /***********************************************   下载完成界面 ******************************************/
+    /** 立即更新**/
     Button btn_upgrade_now;
-    /**
-     * 稍后更新
-     */
+    /** 稍后更新**/
     Button btn_upgrade_later;
-    /**********************************下载完成view相关控件↑*******************************/
-
-
+    /** 系统更新**/
+    Button update_bottom;
+    /** 系统更新-- 重试**/
+    Button update_retry_bottom;
+    /** 系统更新-- 版本信息**/
+    TextView txt_update_version;
+    /** 系统更新-- 更新内容**/
+    TextView tv_update_comment;
+    /***********************************************   错误界面 ******************************************/
+    /** 下载错误界面 去设置wifi**/
+    Button set_wifi;
+    /** 链接错误按钮 重试**/
+    Button retry;
     public static final int NO_INVALID_PACKAGE = 0;//无新的升级包
     public static final int NEW_INVALID_PACKAGE = 1;//有新的升级包
     public static final int ERROR_INVALID_PACKAGE = 2;//获取数据异常
@@ -147,50 +130,56 @@ public class SystemUpgradeFragment extends Fragment {
     /**
      * view状态-获取信息中
      */
-    private int VIEW_STATE_LOADING = -1;
+    private static int VIEW_STATE_LOADING = -1;
     /**
      * view状态-获取信息失败，或者无网络
      */
-    private int VIEW_STATE_NO_DATA = 1;
+    private static int VIEW_STATE_NO_DATA = 1;
     /**
      * view状态-没有可更新
      */
-    private int VIEW_STATE_NO_PACKAGE = 2;
+    private static int VIEW_STATE_NO_PACKAGE = 2;
     /**
      * view状态-有可更新
      */
-    private int VIEW_STATE_NEW_PACKAGE = 3;
+    private static int VIEW_STATE_NEW_PACKAGE = 3;
+    /**
+     * view状态-wifi未打开
+     */
+    private static int VIEW_WIFI_NO_OPEN = 7;
 
     /**
      * 下载中
      */
-    private int VIEW_DOWN_DOWNING = 4;
+    private static int VIEW_DOWN_DOWNING = 4;
     /**
      * 下载错误
      */
-    private int VIEW_DOWN_ERROR = 5;
+    private static int VIEW_DOWN_ERROR = 5;
     /**
      * 下载完成
      */
-    private int VIEW_DOWN_COMPLETE = 6;
+    private static int VIEW_DOWN_COMPLETE = 6;
     /**
      * 是否正在获取固件信息
      */
     private boolean is_loading_version_data;
-
+    private int last_view_munber = -1;
     private Timer timer_net;
 
     public SystemUpgradeFragment(String packageName, Typeface typeface, OtaListener otaListener) {
         check_package_name = packageName;
         this.otaListener = otaListener;
         OtaTool.setTypeFace(typeface);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_system_upgrade, container, false);
+        view = inflater.inflate(R.layout.fragment_system_upgradeback, container, false);
         initView();
         createAction();
+
         return view;
     }
 
@@ -199,6 +188,7 @@ public class SystemUpgradeFragment extends Fragment {
         action = new DownloadAction.ActionListener() {
             @Override
             public void onAction(OtaFileInfo otaFileInfo) {
+                OtaLog.LOGOta("====","==============createAction "+otaFileInfo.fileInfo.getStatus());
                 FileInfo fileInfo = otaFileInfo.fileInfo;
                 switch (fileInfo.getStatus()) {
                     //开始下载
@@ -217,6 +207,7 @@ public class SystemUpgradeFragment extends Fragment {
                     //下载失败
                     case DownloadStatus.ERROR:
                         //等待固件信息获取完毕，才去刷新
+                        OtaLog.LOGOta("==== ","===== 下载出错");
                         if (!is_loading_version_data) {
                             updateDownloadValue(VIEW_DOWN_ERROR);
                         }
@@ -243,18 +234,24 @@ public class SystemUpgradeFragment extends Fragment {
         cancelNetTimer();
     }
 
+
+
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        OtaLog.LOGOta("====","========== 当前fregement 状态 ======="+hidden);
         if (!hidden) {
             //针对清空缓存逻辑
+            OtaLog.LOGOta("====","==== ==== 当前下载状态====="+ DownLoadService.getDownLoadState());
+            updateUI();
             if (!is_loading_version_data) {
                 int state = DownLoadService.getDownLoadState();
                 //如果文件不存在，并且服务状态是完成状态，表示下载完了被清空了
                 if (!checkDownloadFileExists() && state == DownloadStatus.COMPLETE) {
-                    showView(1);
+                    showView(VIEW_STATE_LOADING);
                     startInitLogic();
                 }
             }
+
         }
     }
 
@@ -265,52 +262,98 @@ public class SystemUpgradeFragment extends Fragment {
      * @param type
      */
     private void showView(int type) {
-        if (type == 1) {
-            layout_main_upgrade.setVisibility(View.VISIBLE);
-            layout_main_completed.setVisibility(View.GONE);
-        } else {
-            layout_main_upgrade.setVisibility(View.GONE);
+        last_view_munber =type;
+        layout_no_upgrade.setVisibility(View.GONE);
+        layout_upgrading.setVisibility(View.GONE);
+        lay_laoding.setVisibility(View.GONE);
+        layout_error.setVisibility(View.GONE);
+        layout_error_connect.setVisibility(View.GONE);;
+        layout_main_completed.setVisibility(View.GONE);
+        img_loading.stopRotationAnimation();
+        if(type == VIEW_STATE_LOADING){
+            lay_laoding.setVisibility(View.VISIBLE);
+            img_loading.startRotationAnimation();
+        }else if (type == VIEW_STATE_NO_DATA){
+            layout_error_connect.setVisibility(View.VISIBLE);
+        }else if (type == VIEW_STATE_NO_PACKAGE){
+           layout_no_upgrade .setVisibility(View.VISIBLE);
+        }else if (type == VIEW_STATE_NEW_PACKAGE || type == VIEW_DOWN_COMPLETE || type == VIEW_DOWN_ERROR){
             layout_main_completed.setVisibility(View.VISIBLE);
-            if (null != mInfo) {
-                //下载完成显示更新包信息
-                txt_update_version.setText("方太智慧厨房 " + mInfo.name);
-                tv_update_comment.setText(mInfo.comment);
-            }
+            showCompletedView(type);
+        }else if (type == VIEW_WIFI_NO_OPEN){
+            layout_error.setVisibility(View.VISIBLE);
+        }else if (type == VIEW_DOWN_DOWNING ){
+            layout_upgrading.setVisibility(View.VISIBLE);
+        }else{
+            layout_no_upgrade.setVisibility(View.VISIBLE);
+        }
+        updateVersionValue(type);
+    }
+    private void showCompletedView(int type){
+        btn_upgrade_now.setVisibility(View.GONE);
+        btn_upgrade_later.setVisibility(View.GONE);
+        update_bottom.setVisibility(View.GONE);
+        update_retry_bottom.setVisibility(View.GONE);
+        if(type == VIEW_STATE_NEW_PACKAGE){
+            update_bottom.setVisibility(View.VISIBLE);
+        }else if(type == VIEW_DOWN_COMPLETE){
+            btn_upgrade_now.setVisibility(View.VISIBLE);
+            btn_upgrade_later.setVisibility(View.VISIBLE);
+        }else if(type == VIEW_DOWN_ERROR){
+            update_retry_bottom.setVisibility(View.VISIBLE);
         }
     }
 
     private void initView() {
-        layout_main_upgrade = (RelativeLayout) view.findViewById(R.id.layout_main_upgrade);
-        layout_main_completed = (RelativeLayout) view.findViewById(R.id.layout_main_completed);
-        //默认显示升级界面
-        showView(1);
 
-        btn_upgrade = (Button) view.findViewById(R.id.btn_upgrade);
+        layout_no_upgrade = (RelativeLayout) view.findViewById(R.id.layout_no_upgrade);
+        layout_upgrading= (RelativeLayout) view.findViewById(R.id.layout_upgrading);
+        lay_laoding= (RelativeLayout) view.findViewById(R.id.lay_laoding);
+        layout_error= (RelativeLayout) view.findViewById(R.id.layout_error);
+        layout_error_connect = (RelativeLayout) view.findViewById(R.id.layout_error_connect);
+        layout_main_completed = (RelativeLayout) view.findViewById(R.id.layout_main_completed);
         txt_version_info = (TextView) view.findViewById(R.id.txt_version_info);
-        tv_old_version_tip = (TextView) view.findViewById(R.id.tv_old_version_tip);
-        tv_tips = (TextView) view.findViewById(R.id.tv_tips);
         pbar_download = (HorizontalProgressBarWithNumber) view.findViewById(R.id.pbar_download);
         img_loading = (OtaLoadingView) view.findViewById(R.id.img_loading);
-
-        lay_upgrade = (LinearLayout) view.findViewById(R.id.lay_upgrade);
-        lay_version = (RelativeLayout) view.findViewById(R.id.lay_version);
-        lay_laoding = (RelativeLayout) view.findViewById(R.id.lay_laoding);
-        //----------------------------------------------------------------------//
+        update_bottom = (Button)view.findViewById(R.id.update_bottom);
+        update_retry_bottom = (Button) view.findViewById(R.id.update_retry_bottom);
         txt_update_version = (TextView) view.findViewById(R.id.txt_update_version);
         tv_update_comment = (TextView) view.findViewById(R.id.tv_update_comment);
         btn_upgrade_now = (Button) view.findViewById(R.id.btn_upgrade_now);
         btn_upgrade_later = (Button) view.findViewById(R.id.btn_upgrade_later);
+        set_wifi = (Button) view.findViewById(R.id.set_wifi);
+        retry = (Button) view.findViewById(R.id.retry);
+        tv_tips = (TextView)view.findViewById(R.id.tv_tips);
+
+        /*************************  去设置wifi  ****************/
+        set_wifi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (null != otaListener ) {
+                    otaListener.gotoWifiActivity();
+
+                }
+            }
+        });
+
+        //----------------------------------------------------------------------//
+        retry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showView(VIEW_STATE_LOADING);
+                startInitLogic();
+            }
+        });
 
         //-----------------------------------listener-----------------------------------//
         //点击下载或者重新下载
-        btn_upgrade.setOnClickListener(new View.OnClickListener() {
+        update_bottom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (OtaTool.fastclick()) {
                     if (OtaTool.isNetworkAvailable(getActivity()) && null != mInfo) {
                         startDownLoadService();
-                        lay_upgrade.setVisibility(View.VISIBLE);
-                        lay_version.setVisibility(View.GONE);
+                        showView(VIEW_DOWN_DOWNING);
                     } else {
                         OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
                     }
@@ -321,6 +364,7 @@ public class SystemUpgradeFragment extends Fragment {
         btn_upgrade_now.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //如果设备没有工作中，才执行ota
                 if (null != otaListener && null != mInfo) {
                     if (OtaTool.fastclick()) {
                         boolean contain_mcu = TextUtils.isEmpty(mInfo.ex_url) ? false : true;
@@ -341,23 +385,54 @@ public class SystemUpgradeFragment extends Fragment {
                 }
             }
         });
+        update_retry_bottom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (OtaTool.fastclick()) {
+                    if (OtaTool.isNetworkAvailable(getActivity()) && null != mInfo) {
+                            startDownLoadService();
+                            showView(VIEW_DOWN_DOWNING);
+                    } else {
+                        OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
         //-----------------------------------listener-----------------------------------//
 
-        otaUpgradeUtil = new OtaUpgradeUtil();
-        startInitLogic();
+        //默认显示升级界面
+        OtaTool.showTips(getActivity());
+        OtaLog.LOGOta("====","==== ==== 当前下载状态"+ DownLoadService.getDownLoadState());
+
+            showView(VIEW_STATE_LOADING);
+            otaUpgradeUtil = new OtaUpgradeUtil();
+            startInitLogic();
+
+
     }
 
     private void startInitLogic() {
         //显示加载动画--如果网络畅通，获取升级包信息
+        OtaLog.LOGOta("=======","====== 获取网络状态");
+        try {
+            OtaLog.LOGOta("=======","====== 获取网络状态"+ OtaTool.getWifiState(getActivity()));
+        }catch (Exception e){
+
+        }
+        if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED){
+            showView(VIEW_WIFI_NO_OPEN);
+            return;
+        }
         if (OtaTool.isNetworkAvailable(getActivity())) {
             is_loading_version_data = true;
-            updateVersionValue(VIEW_STATE_LOADING);
+            showView(VIEW_STATE_LOADING);
             getParams();
         } else {
-            updateVersionValue(VIEW_STATE_NO_DATA);
-            OtaTopSnackBar.make(getActivity(), "请检查网络连接！", com.fotile.c2i.ota.view.OtaTopSnackBar.LENGTH_SHORT).show();
+            showView(VIEW_STATE_NO_DATA);
+            OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
         }
     }
+
 
 
     /**
@@ -369,64 +444,33 @@ public class SystemUpgradeFragment extends Fragment {
      *             2-有可更新的固件包
      */
     private void updateVersionValue(int type) {
-        tv_old_version_tip.setText("方太智慧厨房 " + OtaTool.getProperty("ro.cvte.customer.version", "unknow"));
+        //tv_old_version_tip.setText("方太智慧厨房 " + OtaTool.getProperty("ro.cvte.customer.version", "unknow"));
         //信息获取中
         if (type == VIEW_STATE_LOADING) {
-            //当前系统版本
-            String tip = "方太智慧厨房 " + OtaTool.getProperty("ro.cvte.customer.version", "unknow");
-            txt_version_info.setText(tip);
-            txt_version_info.setVisibility(View.GONE);
-            btn_upgrade.setVisibility(View.GONE);
-            btn_upgrade.setText("系统升级");
-            tv_old_version_tip.setVisibility(View.GONE);
-            img_loading.startRotationAnimation();
-
-            lay_laoding.setVisibility(View.VISIBLE);
-            lay_upgrade.setVisibility(View.GONE);
-            lay_version.setVisibility(View.GONE);
         }
         //获取数据失败，没有网络
-        if (type == VIEW_STATE_NO_DATA) {
+        else if (type == VIEW_STATE_NO_DATA) {
             //当前系统版本
             String tip = "方太智慧厨房 " + OtaTool.getProperty("ro.cvte.customer.version", "unknow");
             txt_version_info.setText(tip);
             txt_version_info.setVisibility(View.VISIBLE);
-            btn_upgrade.setVisibility(View.GONE);
-            btn_upgrade.setText("系统升级");
-            tv_old_version_tip.setVisibility(View.GONE);
-            img_loading.stopRotationAnimation();
 
-            lay_laoding.setVisibility(View.GONE);
-            lay_upgrade.setVisibility(View.GONE);
-            lay_version.setVisibility(View.VISIBLE);
         }
         //没有可更新的固件包
         if (type == VIEW_STATE_NO_PACKAGE) {
             String tip = "方太智慧厨房 " + OtaTool.getProperty("ro.cvte.customer.version", "unknow") + "\n当前为最新版本。";
             txt_version_info.setText(tip);
             txt_version_info.setVisibility(View.VISIBLE);
-            btn_upgrade.setVisibility(View.GONE);
-            btn_upgrade.setText("系统升级");
-            tv_old_version_tip.setVisibility(View.GONE);
-            img_loading.stopRotationAnimation();
 
-            lay_laoding.setVisibility(View.GONE);
-            lay_upgrade.setVisibility(View.GONE);
-            lay_version.setVisibility(View.VISIBLE);
         }
         //有可更新的固件包
-        if (type == VIEW_STATE_NEW_PACKAGE) {
-            String tip = "检测到有新系统版本方太智慧 " + mInfo.name;
-            txt_version_info.setText(tip);
-            txt_version_info.setVisibility(View.VISIBLE);
-            btn_upgrade.setVisibility(View.VISIBLE);
-            btn_upgrade.setText("系统升级");
-            tv_old_version_tip.setVisibility(View.VISIBLE);
-            img_loading.stopRotationAnimation();
+        if (type == VIEW_STATE_NEW_PACKAGE || type == VIEW_DOWN_COMPLETE) {
+            String tip = "检测到有新系统版本" + mInfo.name;
+            txt_update_version.setText(tip);
+            txt_update_version.setVisibility(View.VISIBLE);
+            tv_update_comment.setText(mInfo.comment);
+            tv_update_comment.setVisibility(View.VISIBLE);
 
-            lay_laoding.setVisibility(View.GONE);
-            lay_upgrade.setVisibility(View.GONE);
-            lay_version.setVisibility(View.VISIBLE);
         }
     }
 
@@ -447,25 +491,22 @@ public class SystemUpgradeFragment extends Fragment {
     private void updateDownloadValue(int type) {
         //下载完成
         if (type == VIEW_DOWN_COMPLETE) {
-            tv_tips.setText("升级包下载完成");
+            //tv_tips.setText("升级包下载完成");
             //下载完成界面跳转
             if (null != otaListener && null != mInfo) {
                 otaListener.onDownloadCompleted(mInfo.name);
+                OtaTool.setLastUpdateVersion(getActivity(),mInfo,"yes");
             }
 
-            lay_laoding.setVisibility(View.GONE);
-            lay_upgrade.setVisibility(View.VISIBLE);
-            lay_version.setVisibility(View.GONE);
 
-            showView(2);
+
+            showView(VIEW_DOWN_COMPLETE);
         }
         //下载失败
         if (type == VIEW_DOWN_ERROR) {
             //网络造成的下载失败
             if (!OtaTool.isNetworkAvailable(getActivity())) {
-                lay_laoding.setVisibility(View.GONE);
-                lay_upgrade.setVisibility(View.VISIBLE);
-                lay_version.setVisibility(View.GONE);
+
                 tv_tips.setText("暂停下载升级包");
 
                 if (null == timer_net) {
@@ -482,23 +523,13 @@ public class SystemUpgradeFragment extends Fragment {
                     }
                 }, 1000, 1000);
             } else {
-                String tip = "";
-                txt_version_info.setText(tip);
-                txt_version_info.setVisibility(View.GONE);
-                btn_upgrade.setVisibility(View.VISIBLE);
-                btn_upgrade.setText("重新下载");
-                tv_old_version_tip.setVisibility(View.VISIBLE);
-
-                lay_laoding.setVisibility(View.GONE);
-                lay_upgrade.setVisibility(View.GONE);
-                lay_version.setVisibility(View.VISIBLE);
+                showView(VIEW_DOWN_ERROR);
             }
         }
         //下载中
         if (type == VIEW_DOWN_DOWNING) {
-            lay_laoding.setVisibility(View.GONE);
-            lay_upgrade.setVisibility(View.VISIBLE);
-            lay_version.setVisibility(View.GONE);
+
+            showView(VIEW_DOWN_DOWNING);
         }
 
     }
@@ -508,6 +539,7 @@ public class SystemUpgradeFragment extends Fragment {
      */
     public void startDownLoadService() {
         if (null != mInfo) {
+            OtaLog.LOGOta("====","==============开始下载服务 ");
             Intent intent = new Intent(getActivity(), DownLoadService.class);
             intent.putExtra("url", mInfo.url);
             intent.putExtra("md5", mInfo.md5);
@@ -524,32 +556,33 @@ public class SystemUpgradeFragment extends Fragment {
      */
     Handler checkhandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
+            OtaLog.LOGOta("====","============ 当前信息回调"+msg.what);
             switch (msg.what) {
                 //获取数据异常
                 case ERROR_INVALID_PACKAGE:
-                    updateVersionValue(VIEW_STATE_NO_DATA);
+                    showView(VIEW_STATE_NO_DATA);
                     break;
                 //没有可更新的固件包
                 case NO_INVALID_PACKAGE:
-                    updateVersionValue(VIEW_STATE_NO_PACKAGE);
+                    showView(VIEW_STATE_NO_PACKAGE);
                     break;
                 //有可更新的固件包
                 case NEW_INVALID_PACKAGE:
-                    updateVersionValue(VIEW_STATE_NEW_PACKAGE);
-
+                    showView(VIEW_STATE_NEW_PACKAGE);
+                    OtaTool.setLastUpdateVersion(getActivity(),mInfo,"no");
                     int state = DownLoadService.getDownLoadState();
                     //如果当前后台正在下载
                     if (state == DownloadStatus.DOWNLOADING) {
-                        updateDownloadValue(VIEW_DOWN_DOWNING);
+                        showView(VIEW_DOWN_DOWNING);
                     }
                     //如果当前后台下载错误
                     if (state == DownloadStatus.ERROR) {
-                        updateDownloadValue(VIEW_DOWN_ERROR);
+                        showView(VIEW_DOWN_ERROR);
                     }
                     //判断后台下载完成，文件已经保存了一份
                     if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) {
                         otaListener.onDownloadCompleted(mInfo.name);
-                        showView(2);
+                        showView(VIEW_DOWN_COMPLETE);
                     }
                     break;
                 default:
@@ -633,6 +666,15 @@ public class SystemUpgradeFragment extends Fragment {
         Gson parser = new Gson();
         mInfo = parser.fromJson(mingwen, UpgradeInfo.class);
         checkhandler.sendEmptyMessage(NEW_INVALID_PACKAGE);
+    }
+
+    public void updateUI(){
+        OtaLog.LOGOta("====","========== 上一个状态"+last_view_munber);
+        if(last_view_munber == VIEW_WIFI_NO_OPEN || last_view_munber == VIEW_STATE_NO_DATA || last_view_munber == VIEW_DOWN_COMPLETE){
+            showView(VIEW_STATE_LOADING);
+
+            startInitLogic();
+        }
     }
 
 

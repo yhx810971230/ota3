@@ -6,9 +6,11 @@ package com.fotile.c2i.ota.util;
 
 public interface OtaListener {
 
+
     abstract void onDownloadCompleted(String newVersion);
 
     abstract void onInstallNow(boolean containMcu);
 
     abstract void onInstallLater(boolean containMcu);
+    abstract void gotoWifiActivity();
 }
