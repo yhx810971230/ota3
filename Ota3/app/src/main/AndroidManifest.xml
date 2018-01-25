@@ -17,5 +17,8 @@
 
     <application>
         <service android:name=".service.DownLoadService"></service>
+        <service android:name=".service.TimeService"></service>
+        <receiver android:name=".receiver.AlarmReceiver"></receiver>
+        <receiver android:name=".receiver.DataChangeReceiver"></receiver>
     </application>
 </manifest>

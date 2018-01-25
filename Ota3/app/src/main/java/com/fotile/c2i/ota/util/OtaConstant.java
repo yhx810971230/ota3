@@ -13,10 +13,11 @@ public class OtaConstant {
      * 打包改为false
      */
     public static boolean TEST = false;
+    public static boolean TEST_URL_FLAG = false;
 //    public static String TEST_URL = OtaUpgradeUtil.ServerURL + "package=com.fotile.c2i" +
 //            ".sterilizer&version=C2SL-SA111&mac=00259219e046";
     //老司机要求不影响其他设备
-    public static String TEST_URL = "http://develop.fotile.com:8080/fotileAdminSystem/upgrade.do?package=com.OTAceshi&version=C2SL-SA111&mac=";
+    public static String TEST_URL = "http://develop.fotile.com:8080/fotileAdminSystem/upgrade.do?package=com.OTAceshi&version={version}&mac=";
     /**
      * OTA升级包文件名称
      */

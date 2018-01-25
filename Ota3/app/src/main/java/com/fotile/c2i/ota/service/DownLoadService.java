@@ -67,7 +67,7 @@ public class DownLoadService extends Service {
     private boolean show_downing_tip = false;
     private boolean show_complete_tip = false;
     private boolean show_error_tip = false;
-
+    private boolean send_Fregment_change = false;
 
     @Override
     public void onCreate() {
@@ -161,7 +161,7 @@ public class DownLoadService extends Service {
                         show_downing_tip = false;
                         show_complete_tip = false;
                         show_error_tip = false;
-
+                        send_Fregment_change = false;
                         DownloadAction.getInstance().reciverData(otaFileInfo);
                         break;
                     //下载中
@@ -169,7 +169,7 @@ public class DownLoadService extends Service {
                         //show_downing_tip = false;
                         show_complete_tip = false;
                         show_error_tip = false;
-
+                        send_Fregment_change = false;
                         DownloadAction.getInstance().reciverData(otaFileInfo);
                         //如果页面离开设置界面
                         if (!current_act_name.contains("SettingActivity") && !show_downing_tip) {
@@ -189,24 +189,38 @@ public class DownLoadService extends Service {
                             if(!checkOtafile()){ //这里是刚刚下载完mcu 然后进入这边  文件还不存在，会导致进入校验失败逻辑
                                 return;
                             }
-                            if (checkOtamd5()) {
-                                //如果页面离开设置界面
-                                OtaTool.setLastUpdateVersion(getApplicationContext(),"yes");
+                            if(send_Fregment_change){
                                 if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
                                     show_complete_tip = true;
                                     OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
                                             .LENGTH_LONG).show();
                                 }
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
-                            }
-                            //校验失败
-                            else {
-                                OtaLog.LOGOta("下载完成", "=========== 固件包md5校验失败");
-                                if (!show_complete_tip) {
-                                    show_complete_tip = true;
-                                    OtaTopSnackBar.make(DownLoadService.this, "固件包文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
-                                            .LENGTH_LONG).show();
+                            }else {
+                                if (checkOtamd5()) {
+                                    send_Fregment_change = true ; //这里设置为真，表面OTa 文件校验通过 下次就不会进入
+                                    //如果页面离开设置界面
+                                    OtaTool.setLastUpdateVersion(getApplicationContext(),"yes");
+                                    if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
+                                        show_complete_tip = true;
+                                        OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
+                                                .LENGTH_LONG).show();
+                                    }
+
+                                    DownloadAction.getInstance().reciverData(otaFileInfo);
+
                                 }
+                                //校验失败
+                                else {
+                                    send_Fregment_change = true ; //这里设置为真，表面OTa 文件校验通过 下次就不会进入
+                                    OtaLog.LOGOta("下载完成", "=========== 固件包md5校验失败");
+                                    if (!show_complete_tip) {
+                                        show_complete_tip = true;
+                                        OtaTopSnackBar.make(DownLoadService.this, "固件包文件MD5校验错误，请清除缓存重新下载", OtaTopSnackBar
+                                                .LENGTH_LONG).show();
+                                    }
+                                }
+
                             }
 
                         }
@@ -233,7 +247,7 @@ public class DownLoadService extends Service {
                         show_downing_tip = false;
                         show_complete_tip = false;
                         // show_error_tip = false;
-
+                        send_Fregment_change = false;
                         DownloadAction.getInstance().reciverData(otaFileInfo);
                         if (!show_error_tip) {
                             show_error_tip = true;

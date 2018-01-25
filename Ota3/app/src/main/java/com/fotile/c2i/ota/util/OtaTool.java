@@ -47,12 +47,16 @@ public class OtaTool {
     private static long last_time = 0;
 
     /**最多的分散时间*/
-    private static int MAX_TIME_RANDOM = 7200;
+    private static int MAX_TIME_RANDOM = 7200*1000;
 
     private static String LAST_UPDATE_VERSION ="last_update_version";
     private static String VERSION = "version";
+    private static String VERSION_NAME = "name";
     private static String ISDOWM = "isdown";
     private static String COMMENT = "comment";
+    private static String MCU_MD5 = "mcu_md5";
+    private static String OTA_MD5 = "ota_md5";
+
     /**
      * 限制按钮的快速点击情况
      *
@@ -210,18 +214,19 @@ public class OtaTool {
         long current_time = System.currentTimeMillis();
         Date date = new Date(current_time);
         //获取yyyy-MM-dd HH:mm:ss 对应的时间戳-在这之间发起请求指令
-        String time_str_start = df.format(date) + " 02:00:00";
-        String time_str_end = df.format(date) + " 02:10:00";
+        String time_str_start = df.format(date) + " 01:50:00";
+        String time_str_end = df.format(date) + " 02:00:00";
         try {
             df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             //起点和结束点对应的时间戳
             long time_start = df.parse(time_str_start).getTime();
             long time_end = df.parse(time_str_end).getTime();
-
+            long time_bettwen = time_end - time_start;
             OtaLog.LOGOta("后台下载时间校验起点", time_str_start + "--" + time_start);
             OtaLog.LOGOta("后台下载时间校验终点", time_str_end + "--" + time_end);
+            OtaLog.LOGOta("后台下载时间差值",  "--" + time_bettwen);
             OtaLog.LOGOta("后台下载时间当前时间点", current_time);
-
+            OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download == null));
             //如果当前时间点在这两点之间
             if (current_time > time_start && current_time < time_end) {
                 //如果不存在定时器
@@ -229,7 +234,7 @@ public class OtaTool {
                     OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
                     //获取一个随机数，随机数之后开启线程
 
-                    long random_count = (long) OtaTool.randomByMac(7200);
+                    long random_count = (long) OtaTool.randomByMac(7200*1000);
                     if(random_count == 0){
                         random_count = (long)(Math.random() * 3600 * 1000 * 2);
                     }
@@ -241,7 +246,7 @@ public class OtaTool {
                             startDownload(check_package_name, context);
                             timer_download = null;
                         }
-                    }, random_count);
+                    }, random_count+time_bettwen);
                 }
             }
         } catch (ParseException e) {
@@ -266,9 +271,9 @@ public class OtaTool {
                 String reqUrl = otaUpgradeUtil.buildUrl(check_package_name, check_version_code, check_mac_address !=
                         null ? check_mac_address.replace(":", "") : "");
 //                //后台下载不使用测试
-//                if (OtaConstant.TEST) {
-//                    reqUrl = OtaConstant.TEST_URL;
-//                }
+                if (OtaConstant.TEST_URL_FLAG) {
+                    reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));
+                }
                 try {
                     String content = otaUpgradeUtil.httpGet(reqUrl);
                     if (!TextUtils.isEmpty(content)) {
@@ -300,10 +305,14 @@ public class OtaTool {
                     if (!md5_like) {
                         //不通知界面
                         DownloadAction.getInstance().removeAction();
+                        OtaTool.setLastUpdateVersion(context,mInfo,"no");
+                        OtaTool.delectFile();
                         //开启下载服务
                         Intent intent = new Intent(context, DownLoadService.class);
                         intent.putExtra("url", mInfo.url);
                         intent.putExtra("md5", mInfo.md5);
+                        intent.putExtra("ex_url", mInfo.ex_url);
+                        intent.putExtra("ex_md5", mInfo.ex_md5);
                         context.startService(intent);
                         OtaLog.LOGOta("后台下载md5校验", "本地文件md5不同，执行下载");
                     }
@@ -341,9 +350,22 @@ public class OtaTool {
     public static void setLastUpdateVersion(final Context context, UpgradeInfo upgradeInfo, String isdown){
         SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(VERSION_NAME,upgradeInfo.name);
         editor.putString(VERSION,upgradeInfo.version);
         editor.putString(ISDOWM,isdown);
         editor.putString(COMMENT,upgradeInfo.comment);
+        if(upgradeInfo.md5 != null){
+            editor.putString(OTA_MD5,upgradeInfo.md5);
+        }else {
+            editor.putString(OTA_MD5,"");
+        }
+        if(upgradeInfo.ex_md5 != null){
+            editor.putString(MCU_MD5,upgradeInfo.ex_md5);
+        }else {
+            editor.putString(MCU_MD5,"");
+        }
+
+
         editor.apply();
         editor.commit();
     }
@@ -360,10 +382,35 @@ public class OtaTool {
         SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         return sharedPreferences.getString(VERSION,"");
     }
+    /**获取最新版本名称**/
+    public static String getLastUpdateVersionName(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        return sharedPreferences.getString(VERSION_NAME,"");
+    }
     /**获取是否下载**/
     public static String getLastUpdateState(final Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         return sharedPreferences.getString(ISDOWM,"no");
+    }
+    /**获取最新版本的MD5**/
+    public static String getLastUpdateVersionMD5(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        return sharedPreferences.getString(OTA_MD5,"");
+    }
+    /**获取最新版本的更新内容**/
+    public static String getLastUpdateVersionComment(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        return sharedPreferences.getString(COMMENT,"");
+    }
+    public static void delectFile(){
+        File file = new File(OtaConstant.FILE_NAME_OTA);
+        if(file.exists()){
+            file.delete();
+        }
+        File file1 = new File(OtaConstant.FILE_NAME_MCU);
+        if(file1.exists()){
+            file1.delete();
+        }
     }
     /**
      * 校验文件是否下载完成或者已经下载过了
