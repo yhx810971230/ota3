@@ -419,6 +419,24 @@ public class SystemUpgradeFragment extends Fragment {
         }catch (Exception e){
 
         }
+        File file = new File(OtaConstant.FILE_NAME_OTA);
+        if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
+            if( otaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
+                if(mInfo == null){
+                    mInfo = new UpgradeInfo();
+                }
+                mInfo.name = OtaTool.getLastUpdateVersionName(getActivity());
+                mInfo.comment = OtaTool.getLastUpdateVersionComment(getActivity());
+                File file1 = new File(OtaConstant.FILE_NAME_MCU);
+                if (file1.exists()){
+                    mInfo.ex_url = "存在url";
+                }else {
+                    mInfo.ex_url="";
+                }
+                showView(VIEW_DOWN_COMPLETE);
+                return;
+            }
+        }
         if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED){
             showView(VIEW_WIFI_NO_OPEN);
             return;
