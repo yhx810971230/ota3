@@ -417,9 +417,20 @@ public class OtaTool {
      *
      * @return
      */
-    public static boolean checkFiles() {
+    public static boolean checkFiles(final Context context) {
         File file = new File(OtaConstant.FILE_NAME_OTA);
-        return file.exists();
+        if (file.exists()) {
+            return true;
+//            String filemd5 = OtaUpgradeUtil.md5sum(file.getPath());
+//            if (filemd5.equals(getLastUpdateVersionMD5(context))) {
+//                return  true;
+//
+//            }else {
+//                return false;
+//            }
+        }else {
+            return false;
+        }
     }
 
     /**
@@ -435,7 +446,7 @@ public class OtaTool {
                 file.delete();
             }
         }
-        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles());
+        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles(context));
         OtaLog.LOGOta("====","========== 是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
     }
