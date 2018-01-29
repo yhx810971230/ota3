@@ -435,7 +435,7 @@ public class OtaTool {
                 file.delete();
             }
         }
-        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && getLastUpdateState(context).equals("yes") && checkFiles());
+        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles());
         OtaLog.LOGOta("====","========== 是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
     }
