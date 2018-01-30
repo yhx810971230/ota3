@@ -152,7 +152,7 @@
                 android:layout_height="80px"
                 android:background="@drawable/selecter_btn_text"
                 android:gravity="center"
-                android:text="系统升级"
+                android:text="下载"
                 android:textColor="#e1c79b"
                 android:textSize="36px"/>
 
@@ -163,7 +163,7 @@
                 android:layout_marginLeft="130px"
                 android:background="@drawable/selecter_btn_text"
                 android:gravity="center"
-                android:text="重试"
+                android:text="继续下载"
                 android:textColor="#e1c79b"
                 android:textSize="36px"/>
         </LinearLayout>
@@ -206,15 +206,22 @@
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="none">
+                android:scrollbars="vertical"
+                android:layout_marginTop="30px"
+                android:scrollbarSize="4px"
+                android:scrollbarThumbVertical="@drawable/scrollbar_style"
+                android:scrollbarTrackVertical="@drawable/scrollbar_style_background"
+                android:fadeScrollbars="false"
+                android:scrollbarStyle="outsideInset">
 
                 <com.fotile.c2i.ota.view.OtaThinTextView
                     android:id="@+id/tv_update_comment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="30px"
+                    android:paddingRight="8dp"
                     android:alpha="0.6"
                     android:lineSpacingMultiplier="1.2"
+                    android:text="@string/update_tips_version"
                     android:textColor="#ffffff"
                     android:textSize="24px"/>
             </ScrollView>

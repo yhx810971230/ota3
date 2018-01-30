@@ -48,4 +48,7 @@ public class OtaConstant {
      */
     public static final String PASSWORD =
             "9588028820109132570743325311898426347857298773549468758875018579537757772163084478873699447306034466200616411960574122434059469100235892702736860872901247123456";
+
+    public static final String MD5_CHECK_ERROR = "md5_check_error";
+    public static final String MCU_MD5_CHECK_ERROR = "mcu_md5_check_error";
 }

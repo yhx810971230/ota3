@@ -9,8 +9,10 @@ import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.StatFs;
 import android.text.TextUtils;
 
+import com.fotile.c2i.ota.bean.DiskStat;
 import com.fotile.c2i.ota.bean.UpgradeInfo;
 import com.fotile.c2i.ota.service.DownLoadService;
 import com.fotile.c2i.ota.service.DownloadAction;
@@ -23,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -449,5 +453,55 @@ public class OtaTool {
         boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles(context));
         OtaLog.LOGOta("====","========== 是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
+    }
+
+    /**
+     * 计算目标路径的磁盘使用情况
+     *
+     * @param path
+     * @return
+     */
+    public static DiskStat getDiskCapacity(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+
+        StatFs stat = new StatFs(path);
+        long blockSize = stat.getBlockSize();
+        long totalBlockCount = stat.getBlockCount();
+        long feeBlockCount = stat.getAvailableBlocks();
+        OtaLog.LOGOta("====","===== 当前可用空间 ："+blockSize * feeBlockCount/1024/1024/1024+"GB");
+        return new DiskStat(blockSize * feeBlockCount, blockSize
+                * totalBlockCount);
+    }
+
+    public static boolean canUpdate(long fileSize){
+        DiskStat diskStat = getDiskCapacity(OtaConstant.FILE_FOLDER);
+        //可用空间是否大于 文件大小的两倍 +50 MB
+        return diskStat!= null && (diskStat.getFree() - fileSize*2- 50*1024*1024 >0 ) ;
+    }
+
+    /**
+     * 获取网络文件大小
+     * @param url1
+     * @return
+     *
+     */
+    public static int getFileLength(String url1) {
+        int length=0;
+        URL url;
+        try {
+            url = new  URL(url1);
+            HttpURLConnection urlcon=(HttpURLConnection)url.openConnection();
+            //根据响应获取文件大小
+            length=urlcon.getContentLength();
+            urlcon.disconnect();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        OtaLog.LOGOta("=====","===== 网络文件大小 :----"+length);
+        return length;
     }
 }
