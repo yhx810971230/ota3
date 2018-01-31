@@ -6,5 +6,5 @@
     <color name="text_color">#FFFFFF</color>
     <color name="textcolor">#797979</color>
     <color name="general_color">#e1c79b</color>
-    <color name="general_color_background">#545252</color>
+    <color name="general_color_background">#33ffffff</color>
 </resources>

@@ -65,6 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="正在下载升级包"
+                android:layout_marginBottom="70px"
                 android:textColor="#ffffff"
                 android:textSize="30sp"/>
 

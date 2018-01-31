@@ -218,44 +218,78 @@ public class OtaTool {
         long current_time = System.currentTimeMillis();
         Date date = new Date(current_time);
         //获取yyyy-MM-dd HH:mm:ss 对应的时间戳-在这之间发起请求指令
-        String time_str_start = df.format(date) + " 01:50:00";
-        String time_str_end = df.format(date) + " 02:00:00";
-        try {
-            df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            //起点和结束点对应的时间戳
-            long time_start = df.parse(time_str_start).getTime();
-            long time_end = df.parse(time_str_end).getTime();
-            long time_bettwen = time_end - time_start;
-            OtaLog.LOGOta("后台下载时间校验起点", time_str_start + "--" + time_start);
-            OtaLog.LOGOta("后台下载时间校验终点", time_str_end + "--" + time_end);
-            OtaLog.LOGOta("后台下载时间差值",  "--" + time_bettwen);
-            OtaLog.LOGOta("后台下载时间当前时间点", current_time);
-            OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download == null));
-            //如果当前时间点在这两点之间
-            if (current_time > time_start && current_time < time_end) {
-                //如果不存在定时器
-                if (null == timer_download) {
-                    OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
-                    //获取一个随机数，随机数之后开启线程
+        if(!OtaConstant.TEST_URL_FLAG){
+            String time_str_start = df.format(date) + " 01:50:00";
+            String time_str_end = df.format(date) + " 02:00:00";
+            try {
+                df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                //起点和结束点对应的时间戳
+                long time_start = df.parse(time_str_start).getTime();
+                long time_end = df.parse(time_str_end).getTime();
+                long time_bettwen = time_end - time_start;
+                OtaLog.LOGOta("后台下载时间校验起点", time_str_start + "--" + time_start);
+                OtaLog.LOGOta("后台下载时间校验终点", time_str_end + "--" + time_end);
+                OtaLog.LOGOta("后台下载时间差值",  "--" + time_bettwen);
+                OtaLog.LOGOta("后台下载时间当前时间点", current_time);
+                OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download == null));
+                //如果当前时间点在这两点之间
+                if (current_time > time_start && current_time < time_end) {
+                    //如果不存在定时器
+                    if (null == timer_download) {
+                        OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
+                        //获取一个随机数，随机数之后开启线程
 
-                    long random_count = (long) OtaTool.randomByMac(7200*1000);
-                    if(random_count == 0){
-                        random_count = (long)(Math.random() * 3600 * 1000 * 2);
-                    }
-                    timer_download = new Timer();
-                    timer_download.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            //十分钟后开始下载
-                            startDownload(check_package_name, context);
-                            timer_download = null;
+                        long random_count = (long) OtaTool.randomByMac(7200*1000);
+                        if(random_count == 0){
+                            random_count = (long)(Math.random() * 3600 * 1000 * 2);
                         }
-                    }, random_count+time_bettwen);
+                        timer_download = new Timer();
+                        timer_download.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                //十分钟后开始下载
+                                startDownload(check_package_name, context);
+                                timer_download = null;
+                            }
+                        }, random_count+time_bettwen);
+                    }
                 }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
+        }else { // 测试代码
+            String time_str_start = df.format(date) + " 00:00:00";
+            try {
+                df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                //起点和结束点对应的时间戳
+                long time_start = df.parse(time_str_start).getTime();
+                long today_time = current_time - time_start;
+                long hour_time = today_time%3600000;
+                if( (hour_time % 600000 - 5*60*1000 ) <= 0){
+                    OtaLog.LOGOta("===","当前时间在10分钟的前5分钟");
+                    OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download != null));
+                    if (null == timer_download) {
+                        OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
+
+                        timer_download = new Timer();
+                        timer_download.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                //十分钟后开始下载
+                                startDownload(check_package_name, context);
+                                timer_download = null;
+                            }
+                        }, 2*60*1000+5*60*1000);
+                    }
+                }else {
+                    OtaLog.LOGOta("===","当前时间在10分钟的后5分钟  不进行判断");
+                    OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download != null));
+                }
+            }catch  (ParseException e) {
+                e.printStackTrace();
+            }
         }
+
         /***************************处理随机事件逻辑**********************/
 
     }
@@ -278,6 +312,7 @@ public class OtaTool {
                 if (OtaConstant.TEST_URL_FLAG) {
                     reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));
                 }
+                OtaLog.LOGOta("开始获取数据","链接："+reqUrl);
                 try {
                     String content = otaUpgradeUtil.httpGet(reqUrl);
                     if (!TextUtils.isEmpty(content)) {
@@ -299,6 +334,7 @@ public class OtaTool {
                     //判断下载完成，文件已经保存了一份
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
+                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
                         String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
