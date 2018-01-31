@@ -12,6 +12,7 @@ import android.net.wifi.WifiManager;
 import android.os.StatFs;
 import android.text.TextUtils;
 
+import com.dl7.downloaderlib.FileDownloader;
 import com.fotile.c2i.ota.bean.DiskStat;
 import com.fotile.c2i.ota.bean.UpgradeInfo;
 import com.fotile.c2i.ota.service.DownLoadService;
@@ -540,4 +541,27 @@ public class OtaTool {
         OtaLog.LOGOta("=====","===== 网络文件大小 :----"+length);
         return length;
     }
+    /**
+     * 关闭下载服务 同时删除所有tmp文件
+     * @return
+     */
+    public static void cancalDowloadServer(Context context){
+        Intent intent = new Intent(context,DownLoadService.class);
+        context.stopService(intent);
+        //下载服务非处于初始化状态
+        FileDownloader.stopAll();
+        deleteTmpFiles();
+
+    }
+    public static void deleteTmpFiles(){
+        File file = new File(OtaConstant.FILE_NAME_OTA+".tmp");
+        if (file.exists()) {
+            file.delete();
+        }
+        File file1 = new File(OtaConstant.FILE_NAME_MCU+".tmp");
+        if (file1.exists()) {
+            file1.delete();
+        }
+    }
+
 }

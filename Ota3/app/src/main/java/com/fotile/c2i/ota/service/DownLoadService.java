@@ -142,8 +142,12 @@ public class DownLoadService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        FileDownloader.cancel(url);
-        FileDownloader.cancel(ex_url);
+        if(url!=null){
+            FileDownloader.cancel(url);
+        }
+        if(ex_url!=null){
+            FileDownloader.cancel(ex_url);
+        }
         state = DownloadStatus.NORMAL;
     }
 
@@ -273,7 +277,7 @@ public class DownLoadService extends Service {
                                 OtaTopSnackBar.make(DownLoadService.this, "网络断开，下载暂停，请恢复网络", OtaTopSnackBar
                                         .LENGTH_LONG).show();
                             } else {
-                                OtaTopSnackBar.make(DownLoadService.this, "下载未成功，请重新下载", OtaTopSnackBar.LENGTH_LONG)
+                                OtaTopSnackBar.make(DownLoadService.this, "网络断开，下载暂停，请恢复网络", OtaTopSnackBar.LENGTH_LONG)
                                         .show();
                             }
                         }
