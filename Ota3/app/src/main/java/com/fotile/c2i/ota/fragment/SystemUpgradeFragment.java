@@ -464,10 +464,12 @@ public class SystemUpgradeFragment extends Fragment {
             }
         }
         //网络断开
-        if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED){
+        if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED || TextUtils.isEmpty(OtaTool.getConnectWifiSsid(getActivity())) ){
             showView(VIEW_WIFI_NO_OPEN);
             return;
         }
+
+
         //网络可用
         if (OtaTool.isNetworkAvailable(getActivity())) {
             is_loading_version_data = true;
@@ -624,6 +626,7 @@ public class SystemUpgradeFragment extends Fragment {
                 //如果当前后台正在下载
                 if (state == DownloadStatus.DOWNLOADING) {
                     showView(VIEW_DOWN_DOWNING);
+
                 }else if (state == DownloadStatus.ERROR) {//如果当前后台下载错误
                     showView(VIEW_DOWN_ERROR);
                 }else if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) { //判断后台下载完成，文件已经保存了一份

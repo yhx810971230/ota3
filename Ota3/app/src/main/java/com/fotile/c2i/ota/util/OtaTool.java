@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.StatFs;
 import android.text.TextUtils;
@@ -386,6 +387,16 @@ public class OtaTool {
 
            }
         return wifiState;
+    }
+    public static String getConnectWifiSsid(final Context context){
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        OtaLog.LOGOta("wifiInfo", wifiInfo.toString());
+        OtaLog.LOGOta("SSID+==","=====设置wifi ssid:"+wifiInfo.getSSID());
+        if(wifiInfo.getSSID()==null || wifiInfo.getSSID().equals("0x")){
+            return "";
+        }
+        return wifiInfo.getSSID();
     }
     /**设置最新版本**/
     public static void setLastUpdateVersion(final Context context, UpgradeInfo upgradeInfo, String isdown){
