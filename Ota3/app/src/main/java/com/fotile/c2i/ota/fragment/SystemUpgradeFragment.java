@@ -422,6 +422,7 @@ public class SystemUpgradeFragment extends Fragment {
                 }
             }
         });
+
         //-----------------------------------listener-----------------------------------//
 
         //默认显示升级界面
@@ -444,6 +445,7 @@ public class SystemUpgradeFragment extends Fragment {
 
         }
         File file = new File(OtaConstant.FILE_NAME_OTA);
+        //网络断开且有本地文件
         if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
             if( otaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
                 if(mInfo == null){
@@ -461,10 +463,12 @@ public class SystemUpgradeFragment extends Fragment {
                 return;
             }
         }
+        //网络断开
         if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED){
             showView(VIEW_WIFI_NO_OPEN);
             return;
         }
+        //网络可用
         if (OtaTool.isNetworkAvailable(getActivity())) {
             is_loading_version_data = true;
             showView(VIEW_STATE_LOADING);
@@ -603,6 +607,7 @@ public class SystemUpgradeFragment extends Fragment {
             if(!is_loading_version_data){
                 return;
             }
+            is_loading_version_data = false;
             if (msg.what == ERROR_INVALID_PACKAGE) {
                 showView(VIEW_STATE_NO_DATA);
 
@@ -615,16 +620,13 @@ public class SystemUpgradeFragment extends Fragment {
                 showView(VIEW_STATE_NEW_PACKAGE);
                 OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
                 int state = DownLoadService.getDownLoadState();
+                OtaLog.LOGOta("===当前获取到固件信息后","当前的工作状态："+state);
                 //如果当前后台正在下载
                 if (state == DownloadStatus.DOWNLOADING) {
                     showView(VIEW_DOWN_DOWNING);
-                }
-                //如果当前后台下载错误
-                if (state == DownloadStatus.ERROR) {
+                }else if (state == DownloadStatus.ERROR) {//如果当前后台下载错误
                     showView(VIEW_DOWN_ERROR);
-                }
-                //判断后台下载完成，文件已经保存了一份
-                if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) {
+                }else if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) { //判断后台下载完成，文件已经保存了一份
                     otaListener.onDownloadCompleted(mInfo.name);
                     showView(VIEW_DOWN_COMPLETE);
                 }
@@ -637,7 +639,7 @@ public class SystemUpgradeFragment extends Fragment {
 
             }
 
-            is_loading_version_data = false;
+
         }
     };
 
