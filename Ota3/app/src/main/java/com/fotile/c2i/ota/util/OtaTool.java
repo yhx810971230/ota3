@@ -562,6 +562,7 @@ public class OtaTool {
         if (file1.exists()) {
             file1.delete();
         }
+        delectFile();
     }
 
 }
