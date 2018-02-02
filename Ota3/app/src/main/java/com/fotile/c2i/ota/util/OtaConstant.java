@@ -51,4 +51,18 @@ public class OtaConstant {
 
     public static final String MD5_CHECK_ERROR = "md5_check_error";
     public static final String MCU_MD5_CHECK_ERROR = "mcu_md5_check_error";
+    public static final String DOWNLOAD_COMPLETE = "complete";
+    public static final String DOWNLOAD_COMPLETE_ERROR = "complete_error";
+
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void DownloadEvent(DownloadEvent downloadEvent) {
+//        if(downloadEvent!=null && downloadEvent.getDownload_state().equals(OtaConstant.DOWNLOAD_COMPLETE)){
+//            LogUtil.LOGOta("========","========= 下载事件完成，去判断");
+//            //这边是现在完成并且ota，校验通过
+//        }else
+//        if(downloadEvent!=null && downloadEvent.getDownload_state().equals(OtaConstant.DOWNLOAD_COMPLETE_ERROR)){
+//            LogUtil.LOGOta("========","========= 下载事件完成，去判断,但是失败了");
+//            //这边是现在完成并且ota，校验不通过，，，这里会直接删除
+//        }
+//    }
 }

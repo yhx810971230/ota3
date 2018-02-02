@@ -12,12 +12,15 @@ import com.dl7.downloaderlib.DownloadListener;
 import com.dl7.downloaderlib.FileDownloader;
 import com.dl7.downloaderlib.entity.FileInfo;
 import com.dl7.downloaderlib.model.DownloadStatus;
+import com.fotile.c2i.ota.bean.DownloadEvent;
 import com.fotile.c2i.ota.bean.OtaFileInfo;
 import com.fotile.c2i.ota.util.OtaConstant;
 import com.fotile.c2i.ota.util.OtaLog;
 import com.fotile.c2i.ota.util.OtaTool;
 import com.fotile.c2i.ota.util.OtaUpgradeUtil;
 import com.fotile.c2i.ota.view.OtaTopSnackBar;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -221,7 +224,7 @@ public class DownLoadService extends Service {
                                         OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
                                                 .LENGTH_LONG).show();
                                     }
-
+                                    EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
 
 
                                 }else {//ota校验失败
@@ -234,6 +237,7 @@ public class DownLoadService extends Service {
                                         OtaTopSnackBar.make(DownLoadService.this, "固件下载中已损坏，请重新下载", OtaTopSnackBar
                                                 .LENGTH_LONG).show();
                                     }
+                                    EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"下载完成,但是文件损坏了"));
                                 }
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
 
