@@ -250,6 +250,12 @@ public class OtaTool {
                             @Override
                             public void run() {
                                 //十分钟后开始下载
+                                if(OtaConstant.TEST_PRINT_FILE){
+                                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                    long downloadtime = System.currentTimeMillis();
+                                    String nowtime = df.format(downloadtime) ;
+                                    creatDownloadInfo(nowtime);
+                                }
                                 startDownload(check_package_name, context);
                                 timer_download = null;
                             }
@@ -278,6 +284,12 @@ public class OtaTool {
                             @Override
                             public void run() {
                                 //十分钟后开始下载
+                                if(OtaConstant.TEST_PRINT_FILE){
+                                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                    long downloadtime = System.currentTimeMillis();
+                                    String nowtime = df.format(downloadtime) ;
+                                    creatDownloadInfo(nowtime);
+                                }
                                 startDownload(check_package_name, context);
                                 timer_download = null;
                             }
@@ -574,6 +586,21 @@ public class OtaTool {
             file1.delete();
         }
         delectFile();
+    }
+    public static boolean creatDownloadInfo(String time){
+        boolean bool =false;
+        String filepath = OtaConstant.FILE_FOLDER+time+".txt";
+        File file = new File(filepath);
+        try {
+            if (!file.exists()){
+                file.createNewFile();
+                OtaLog.LOGOta("=== 创建文件成功","创建文件成功");
+                bool =true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bool;
     }
 
 }
