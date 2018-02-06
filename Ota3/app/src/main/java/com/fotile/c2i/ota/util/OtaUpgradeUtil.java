@@ -1,6 +1,5 @@
 package com.fotile.c2i.ota.util;
 
-import android.content.Context;
 import android.util.Base64;
 
 import java.io.FileInputStream;
@@ -30,23 +29,37 @@ public class OtaUpgradeUtil {
      */
 //    public String ServerURL = "http://ota.fotile.com:8080/fotileAdminSystem/upgrade.do?";
 
-    public static final String ServerURL = "http://develop.fotile.com:8080/fotileAdminSystem/upgrade.do?";
-
+    public static final String ServerURL = "http://ota.fotile.com:8080/fotileAdminSystem/upgrade.do?" ;
+    public static final String Server_Old_URL = "http://develop.fotile.com:8080/fotileAdminSystem/upgrade.do?";
     public OtaUpgradeUtil() {
 
     }
 
     public String buildUrl(String packageName, String currentVersion, String deviceMac) {
-        StringBuilder sb = new StringBuilder(ServerURL);
-        sb.append("package=");
-        sb.append(packageName);
-        sb.append('&');
-        sb.append("version=");
-        sb.append(currentVersion);
-        sb.append('&');
-        sb.append("mac=");
-        sb.append(deviceMac);
-        return sb.toString();
+        if(HttpUtil.isNewState()){
+            StringBuilder sb = new StringBuilder(ServerURL);
+            sb.append("package=");
+            sb.append(packageName);
+            sb.append('&');
+            sb.append("version=");
+            sb.append(currentVersion);
+            sb.append('&');
+            sb.append("mac=");
+            sb.append(deviceMac);
+            return sb.toString();
+        }else {
+            StringBuilder sb = new StringBuilder(Server_Old_URL);
+            sb.append("package=");
+            sb.append(packageName);
+            sb.append('&');
+            sb.append("version=");
+            sb.append(currentVersion);
+            sb.append('&');
+            sb.append("mac=");
+            sb.append(deviceMac);
+            return sb.toString();
+        }
+
     }
 
 

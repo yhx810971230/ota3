@@ -254,6 +254,7 @@ public class SystemUpgradeFragment extends Fragment {
             //针对清空缓存逻辑
             OtaLog.LOGOta("====","==== ==== 当前下载状态====="+ DownLoadService.getDownLoadState());
             updateUI();
+            DownLoadService.setShow_downing_tip(false);
             if (!is_loading_version_data) {
                 int state = DownLoadService.getDownLoadState();
                 //如果文件不存在，并且服务状态是完成状态，表示下载完了被清空了
@@ -432,7 +433,7 @@ public class SystemUpgradeFragment extends Fragment {
         showView(VIEW_STATE_LOADING);
         otaUpgradeUtil = new OtaUpgradeUtil();
         startInitLogic();
-
+        DownLoadService.setShow_downing_tip(false);
 
     }
 

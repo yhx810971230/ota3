@@ -64,10 +64,11 @@ public class DownLoadService extends Service {
 
     private static int state = DownloadStatus.NORMAL;
 
+
     /**
      * 标志位，控制顶部提示只显示一次
      */
-    private boolean show_downing_tip = false;
+    private static boolean show_downing_tip = false;
     private boolean show_complete_tip = false;
     private boolean show_error_tip = false;
     private boolean send_Fregment_change = false;
@@ -341,6 +342,10 @@ public class DownLoadService extends Service {
             }
         }
         return check_md5_mcu;
+    }
+
+    public static void setShow_downing_tip(boolean show_downing_tip) {
+        DownLoadService.show_downing_tip = show_downing_tip;
     }
 
     /**
