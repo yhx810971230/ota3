@@ -686,7 +686,7 @@ public class SystemUpgradeFragment extends Fragment {
 
     private void getUpgradeInfo() {
         String reqUrl = otaUpgradeUtil.buildUrl(check_package_name, check_version_code, check_mac_address != null ?
-                check_mac_address.replace(":", "") : "");
+                check_mac_address.replace(":", "") : "",getActivity());
         if (OtaConstant.TEST_URL_FLAG) {
             reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));
         }

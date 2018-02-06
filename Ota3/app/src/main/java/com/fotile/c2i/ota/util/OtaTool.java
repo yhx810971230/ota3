@@ -321,7 +321,7 @@ public class OtaTool {
                 UpgradeInfo mInfo = null;
 
                 String reqUrl = otaUpgradeUtil.buildUrl(check_package_name, check_version_code, check_mac_address !=
-                        null ? check_mac_address.replace(":", "") : "");
+                        null ? check_mac_address.replace(":", "") : "",context);
 //                //后台下载不使用测试
                 if (OtaConstant.TEST_URL_FLAG) {
                     reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));

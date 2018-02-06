@@ -1,5 +1,6 @@
 package com.fotile.c2i.ota.util;
 
+import android.content.Context;
 import android.util.Base64;
 
 import java.io.FileInputStream;
@@ -35,8 +36,8 @@ public class OtaUpgradeUtil {
 
     }
 
-    public String buildUrl(String packageName, String currentVersion, String deviceMac) {
-        if(HttpUtil.isNewState()){
+    public String buildUrl(String packageName, String currentVersion, String deviceMac, Context context) {
+        if(HttpUtil.isNewState(context)){
             StringBuilder sb = new StringBuilder(ServerURL);
             sb.append("package=");
             sb.append(packageName);
