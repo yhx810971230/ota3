@@ -125,9 +125,15 @@ public class HttpUtil {
             String[] results = result.split(DEPART);
             //将数据存到map集合中
             Map<String, String> userMap = new HashMap<String, String>();
-            userMap.put(OTA_STATE, results[0]);
-            userMap.put(RECIPES_URL, results[1]);
-            OtaLog.LOGOta("===当前文件状态","当前ota状态"+results[0]+",当前recipes_url"+results[1]);
+            if(results!=null && results.length == 2){
+                userMap.put(OTA_STATE, results[0]);
+                userMap.put(RECIPES_URL, results[1]);
+                OtaLog.LOGOta("===当前文件状态","当前ota状态"+results[0]+",当前recipes_url"+results[1]);
+            }else if(results.length == 1){
+                userMap.put(OTA_STATE, results[0]);
+                userMap.put(RECIPES_URL, "");
+                OtaLog.LOGOta("===当前文件状态","当前ota状态"+results[0]+",当前recipes_url"+"");
+            }
             return userMap;
         } catch (Exception e) {
             // TODO Auto-generated catch block
