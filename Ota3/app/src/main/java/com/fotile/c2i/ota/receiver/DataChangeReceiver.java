@@ -20,7 +20,7 @@ public class DataChangeReceiver extends BroadcastReceiver {
             @Override
             public void run() {
                 OtaLog.LOGOta("=====","=========   开始执行代码 巴拉巴拉小魔仙");
-                OtaTool.startDownloadBackGround("com.fotile.c2i.sterilizer",context);
+                OtaTool.startDownloadBackGround(OtaTool.getProperty("ro.cvte.customer.version", "100"),context);
             }
         }).start();
     }

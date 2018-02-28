@@ -436,6 +436,14 @@ public class SystemUpgradeFragment extends Fragment {
         DownLoadService.setShow_downing_tip(false);
 
     }
+    private void startInitLogicThread(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startInitLogic();
+            }
+        }).start();
+    }
 
     private void startInitLogic() {
         //显示加载动画--如果网络畅通，获取升级包信息
