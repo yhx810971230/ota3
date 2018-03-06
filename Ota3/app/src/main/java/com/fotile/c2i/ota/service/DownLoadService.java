@@ -24,6 +24,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 
 /**
  * 文件名称：DownLoadService
@@ -215,6 +216,10 @@ public class DownLoadService extends Service {
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
                             }else {
                                 ota_file_check_flag = checkOtamd5();
+                                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                long downloadtime = System.currentTimeMillis();
+                                final String nowtime = df.format(downloadtime) + "下载完成";
+                                OtaTool.writeDownloadInfo(nowtime+String.valueOf(ota_file_check_flag),String.valueOf(ota_file_check_flag));
                                 send_Fregment_change = true ;//这里设置为真，表面OTa 文件校验过 下次就不会进入
                                 if (ota_file_check_flag) {
 

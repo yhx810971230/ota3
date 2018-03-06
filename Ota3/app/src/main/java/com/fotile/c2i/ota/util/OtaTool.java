@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -233,7 +234,7 @@ public class OtaTool {
                 OtaLog.LOGOta("后台下载时间校验终点", time_str_end + "--" + time_end);
                 OtaLog.LOGOta("后台下载时间差值",  "--" + time_bettwen);
                 OtaLog.LOGOta("后台下载时间当前时间点", current_time);
-                OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download == null));
+                OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download != null));
                 //如果当前时间点在这两点之间
                 if (current_time > time_start && current_time < time_end) {
                     //如果不存在定时器
@@ -253,10 +254,12 @@ public class OtaTool {
                                 if(OtaConstant.TEST_PRINT_FILE){
                                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                     long downloadtime = System.currentTimeMillis();
-                                    String nowtime = df.format(downloadtime) ;
-                                    creatDownloadInfo(nowtime);
+                                    final String nowtime = df.format(downloadtime) ;
+                                    startDownload(check_package_name, context,nowtime);
+                                }else {
+                                    startDownload(check_package_name, context);
                                 }
-                                startDownload(check_package_name, context);
+
                                 timer_download = null;
                             }
                         }, random_count+time_bettwen);
@@ -287,10 +290,12 @@ public class OtaTool {
                                 if(OtaConstant.TEST_PRINT_FILE){
                                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                     long downloadtime = System.currentTimeMillis();
-                                    String nowtime = df.format(downloadtime) ;
-                                    creatDownloadInfo(nowtime);
+                                    final String nowtime = df.format(downloadtime) ;
+                                    startDownload(check_package_name, context,nowtime);
+                                }else {
+                                    startDownload(check_package_name, context);
                                 }
-                                startDownload(check_package_name, context);
+
                                 timer_download = null;
                             }
                         }, 2*60*1000+5*60*1000);
@@ -349,7 +354,7 @@ public class OtaTool {
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
                         OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
-                        String filemd5 = otaUpgradeUtil.md5sum(file.getPath());
+                        String filemd5 = ""+otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
                             return;
@@ -374,6 +379,99 @@ public class OtaTool {
             }
         }).start();
     }
+
+    private static void startDownload(final String check_package_name, final Context context,final String nowtime) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                /*******************************获取下载包信息*******************************/
+                OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
+                //校验版本号
+                String check_version_code = getProperty("ro.cvte.customer.version", "100");
+                //校验mac地址
+                String check_mac_address = getLocalMacAddress();
+                UpgradeInfo mInfo = null;
+
+                String reqUrl = otaUpgradeUtil.buildUrl(check_package_name, check_version_code, check_mac_address !=
+                        null ? check_mac_address.replace(":", "") : "",context);
+//                //后台下载不使用测试
+                if (OtaConstant.TEST_URL_FLAG) {
+                    reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));
+                }
+                OtaLog.LOGOta("开始获取数据","链接："+reqUrl);
+                String content ="";
+                try {
+                    content = otaUpgradeUtil.httpGet(reqUrl);
+                    if (!TextUtils.isEmpty(content)) {
+                        JSONObject jo = new JSONObject(content);
+                        String mingwen = otaUpgradeUtil.Decrypt(jo.getString("message"), OtaConstant.PASSWORD);
+                        OtaLog.LOGOta("请求Ota包信息返回数据", mingwen);
+                        Gson parser = new Gson();
+                        mInfo = parser.fromJson(mingwen, UpgradeInfo.class);
+                    }
+                    String outputinfo = "";
+                    outputinfo += "当前版本："+check_version_code+"    \n";
+                    outputinfo += "MAC地址："+check_mac_address+"    \n";
+                    outputinfo += "请求的URL："+reqUrl+"    \n";
+                    outputinfo += "网络请求content："+content+"    \n";
+                    String filepath = OtaConstant.FILE_FOLDER+nowtime+".txt";
+                    File file = new File(filepath);
+                    if(mInfo!=null){
+                        outputinfo += "mInfo数据："+mInfo.toString();
+                    }
+                    File file222 = new File(OtaConstant.FILE_NAME_OTA);
+                    if (file222.exists()) {
+                        outputinfo += "本地数据文件存在：    \n";
+                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
+                        String filemd5 = ""+ otaUpgradeUtil.md5sum(file.getPath());
+                        if (filemd5.equals(mInfo.md5)) {
+                            outputinfo += "本地数据文件匹配:(不会下载    \n";
+                        }else {
+                            outputinfo += "本地数据文件不匹配:（会下载    \n";
+                        }
+                    }else {
+                        outputinfo += "本地数据文件不存在：（会下载    \n";
+                    }
+                    writeDownloadInfo(nowtime,outputinfo);
+                } catch (Exception e) {
+                    //异常不处理
+                    e.printStackTrace();
+                }
+                /*******************************获取下载包信息*******************************/
+
+                if (null != mInfo) {
+                    //判断本地文件md5和网络接口获取的是否一样，不一样才执行下载
+                    boolean md5_like = false;
+                    //判断下载完成，文件已经保存了一份
+                    File file = new File(OtaConstant.FILE_NAME_OTA);
+                    if (file.exists()) {
+                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
+                        String filemd5 =""+ otaUpgradeUtil.md5sum(file.getPath());
+                        if (filemd5.equals(mInfo.md5)) {
+                            md5_like = true;
+                            return;
+                        }
+                    }
+
+                    if (!md5_like) {
+                        //不通知界面
+                        DownloadAction.getInstance().removeAction();
+                        OtaTool.setLastUpdateVersion(context,mInfo,"no");
+                        OtaTool.delectFile();
+                        //开启下载服务
+                        Intent intent = new Intent(context, DownLoadService.class);
+                        intent.putExtra("url", mInfo.url);
+                        intent.putExtra("md5", mInfo.md5);
+                        intent.putExtra("ex_url", mInfo.ex_url);
+                        intent.putExtra("ex_md5", mInfo.ex_md5);
+                        context.startService(intent);
+                        OtaLog.LOGOta("后台下载md5校验", "本地文件md5不同，执行下载");
+                    }
+                }
+            }
+        }).start();
+    }
+
     public static int randomByMac(int max_time){
         if(max_time<=0 || max_time>MAX_TIME_RANDOM){
             max_time=MAX_TIME_RANDOM;
@@ -397,7 +495,7 @@ public class OtaTool {
 
             wifiState = wifiManager.getWifiState();
 
-           }
+        }
         return wifiState;
     }
     public static String getConnectWifiSsid(final Context context){
@@ -602,5 +700,34 @@ public class OtaTool {
         }
         return bool;
     }
+    public static boolean writeDownloadInfo(String time,String info){
+        boolean bool =false;
+        String filepath = OtaConstant.FILE_FOLDER+time+".txt";
+        String filedir = OtaConstant.FILE_FOLDER;
+        File file1 = new File(filedir);
+        File file = new File(filepath);
+        try {
+            if(!file1.exists()){
+                file1.mkdirs();
+            }
+            if (!file.exists()){
+                file.createNewFile();
+                OtaLog.LOGOta("=== 创建文件成功","创建文件成功");
+            }
+            //文件输出流
+            FileOutputStream fos = new FileOutputStream(file);
+            //写数据
+            fos.write((info).getBytes());
+
+            //关闭文件流
+            fos.close();
+            bool = true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bool;
+    }
+
 
 }

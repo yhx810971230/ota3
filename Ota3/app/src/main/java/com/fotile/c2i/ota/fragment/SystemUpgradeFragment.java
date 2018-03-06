@@ -638,9 +638,17 @@ public class SystemUpgradeFragment extends Fragment {
 
                 }else if (state == DownloadStatus.ERROR) {//如果当前后台下载错误
                     showView(VIEW_DOWN_ERROR);
-                }else if (OtaTool.checkDownloadFileMd5(mInfo) && null != otaListener) { //判断后台下载完成，文件已经保存了一份
-                    otaListener.onDownloadCompleted(mInfo.name);
-                    showView(VIEW_DOWN_COMPLETE);
+                }else if (  null != otaListener) { //判断后台下载完成，文件已经保存了一份
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(OtaTool.checkDownloadFileMd5(mInfo)){
+                                otaListener.onDownloadCompleted(mInfo.name);
+                                showView(VIEW_DOWN_COMPLETE);
+                            }
+                        }
+                    }).start();
+
                 }
 
             } else if (msg.what == GET_INFO_TIMEOUT) {

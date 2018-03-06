@@ -27,4 +27,23 @@ public class UpgradeInfo implements Serializable {
     public String forversion; // 可升级此版本固件的版本，如果返回非空，则代表差分包，如果为空，则为全包
     public String upgradeType; // 升级类型，0：强制升级，1：推荐升级
 
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", code='").append(code).append('\'');
+        sb.append(", packagename='").append(packagename).append('\'');
+        sb.append(", md5='").append(md5).append('\'');
+        sb.append(", ex_md5='").append(ex_md5).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", size='").append(size).append('\'');
+        sb.append(", url='").append(url).append('\'');
+        sb.append(", ex_url='").append(ex_url).append('\'');
+        sb.append(", version='").append(version).append('\'');
+        sb.append(", forversion='").append(forversion).append('\'');
+        sb.append(", upgradeType='").append(upgradeType).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
