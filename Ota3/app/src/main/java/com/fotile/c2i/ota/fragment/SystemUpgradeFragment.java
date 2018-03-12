@@ -243,6 +243,7 @@ public class SystemUpgradeFragment extends Fragment {
             DownloadAction.getInstance().removeAction();
         }
         cancelNetTimer();
+        checkhandler.removeCallbacksAndMessages(null);
     }
 
 
@@ -629,7 +630,9 @@ public class SystemUpgradeFragment extends Fragment {
                 //有可更新的固件包
             } else if (msg.what == NEW_INVALID_PACKAGE) {
                 showView(VIEW_STATE_NEW_PACKAGE);
-                OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
+                if(getActivity()!=null){
+                    OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
+                }
                 int state = DownLoadService.getDownLoadState();
                 OtaLog.LOGOta("===当前获取到固件信息后","当前的工作状态："+state);
                 //如果当前后台正在下载
