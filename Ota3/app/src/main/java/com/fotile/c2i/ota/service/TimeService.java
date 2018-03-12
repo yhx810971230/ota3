@@ -18,7 +18,7 @@ public class TimeService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        OtaLog.LOGOta("=====", "========后台进程绑定。。。");
+        OtaLog.LOGOta("时间进程", "后台进程绑定。。。");
         return null;
     }
 
@@ -26,7 +26,7 @@ public class TimeService extends Service {
     public void onCreate() {
 
         super.onCreate();
-        OtaLog.LOGOta("=====", "========后台进程被创建。。。");
+        OtaLog.LOGOta("时间进程", "后台进程被创建。。。");
 
 //服务启动广播接收器，使得广播接收器可以在程序退出后在后天继续执行，接收系统时间变更广播事件
         DataChangeReceiver receiver=new DataChangeReceiver();
@@ -58,7 +58,7 @@ public class TimeService extends Service {
     @Override
     public void onDestroy() {
 
-        OtaLog.LOGOta("=====", "===========后台进程被销毁了。。。");
+        OtaLog.LOGOta("时间进程", "后台进程被销毁了。。。");
         super.onDestroy();
     }
 

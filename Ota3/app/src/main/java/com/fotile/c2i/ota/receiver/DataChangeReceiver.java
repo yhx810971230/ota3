@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.fotile.c2i.ota.util.OtaConstant;
 import com.fotile.c2i.ota.util.OtaLog;
 import com.fotile.c2i.ota.util.OtaTool;
 
@@ -19,8 +20,8 @@ public class DataChangeReceiver extends BroadcastReceiver {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                OtaLog.LOGOta("=====","=========   开始执行代码 巴拉巴拉小魔仙");
-                OtaTool.startDownloadBackGround(OtaTool.getProperty("ro.cvte.customer.version", "100"),context);
+                OtaLog.LOGOta("时间改变监听","开始执行代码 巴拉巴拉小魔仙");
+                OtaTool.startDownloadBackGround(OtaTool.getMetaValue(context, OtaConstant.SYS_OF_PACKAGE),context);
             }
         }).start();
     }

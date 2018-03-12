@@ -192,7 +192,7 @@ public class SystemUpgradeFragment extends Fragment {
         action = new DownloadAction.ActionListener() {
             @Override
             public void onAction(OtaFileInfo otaFileInfo) {
-                OtaLog.LOGOta("====","==============createAction "+otaFileInfo.fileInfo.getStatus());
+                OtaLog.LOGOta("系统升级界面","createAction  当前文件状态"+otaFileInfo.fileInfo.getStatus());
                 FileInfo fileInfo = otaFileInfo.fileInfo;
                 if(otaFileInfo.errorMsg!=null && (otaFileInfo.errorMsg.equals(OtaConstant.MD5_CHECK_ERROR)||otaFileInfo.errorMsg.equals(OtaConstant.MCU_MD5_CHECK_ERROR))){
                     showView(VIEW_STATE_LOADING);
@@ -218,7 +218,7 @@ public class SystemUpgradeFragment extends Fragment {
                     //下载失败
                     case DownloadStatus.ERROR:
                         //等待固件信息获取完毕，才去刷新
-                        OtaLog.LOGOta("==== ","===== 下载出错");
+                        OtaLog.LOGOta("下载监听 ","下载出错");
                         if (!is_loading_version_data) {
                             updateDownloadValue(VIEW_DOWN_ERROR);
                         }
@@ -249,10 +249,10 @@ public class SystemUpgradeFragment extends Fragment {
 
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        OtaLog.LOGOta("====","========== 当前fregement 状态 ======="+hidden);
+        OtaLog.LOGOta("升级界面状态","当前系统升级fregement 状态 ="+hidden);
         if (!hidden) {
             //针对清空缓存逻辑
-            OtaLog.LOGOta("====","==== ==== 当前下载状态====="+ DownLoadService.getDownLoadState());
+            OtaLog.LOGOta("升级界面状态","当前下载状态"+ DownLoadService.getDownLoadState());
             updateUI();
             DownLoadService.setShow_downing_tip(false);
             if (!is_loading_version_data) {
@@ -364,7 +364,7 @@ public class SystemUpgradeFragment extends Fragment {
             public void onClick(View view) {
                 if (OtaTool.fastclick()) {
                     if (OtaTool.isNetworkAvailable(getActivity()) && null != mInfo) {
-                        OtaLog.LOGOta("=====","=====  需要下载的文件大小："+mInfo.size);
+                        OtaLog.LOGOta("升级按钮","需要下载的文件大小："+mInfo.size);
                         if(mInfo.size!=null){
                             if(OtaTool.canUpdate(Long.valueOf(mInfo.size))){
                                 startDownLoadService();
@@ -428,7 +428,7 @@ public class SystemUpgradeFragment extends Fragment {
 
         //默认显示升级界面
         OtaTool.showTips(getActivity());
-        OtaLog.LOGOta("====","==== ==== 当前下载状态"+ DownLoadService.getDownLoadState());
+        OtaLog.LOGOta("升级界面","当前下载状态"+ DownLoadService.getDownLoadState());
 
         showView(VIEW_STATE_LOADING);
         otaUpgradeUtil = new OtaUpgradeUtil();
@@ -447,9 +447,9 @@ public class SystemUpgradeFragment extends Fragment {
 
     private void startInitLogic() {
         //显示加载动画--如果网络畅通，获取升级包信息
-        OtaLog.LOGOta("=======","====== 获取网络状态");
+        OtaLog.LOGOta("升级界面","获取网络状态");
         try {
-            OtaLog.LOGOta("=======","====== 获取网络状态"+ OtaTool.getWifiState(getActivity()));
+            OtaLog.LOGOta("升级界面"," 获取网络状态"+ OtaTool.getWifiState(getActivity()));
         }catch (Exception e){
 
         }
@@ -596,7 +596,7 @@ public class SystemUpgradeFragment extends Fragment {
      */
     public void startDownLoadService() {
         if (null != mInfo) {
-            OtaLog.LOGOta("====","==============开始下载服务 ");
+            OtaLog.LOGOta("升级界面","开始下载服务 ");
             Intent intent = new Intent(getActivity(), DownLoadService.class);
             intent.putExtra("url", mInfo.url);
             intent.putExtra("md5", mInfo.md5);
@@ -613,7 +613,7 @@ public class SystemUpgradeFragment extends Fragment {
      */
     private Handler checkhandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
-            OtaLog.LOGOta("====","============ 当前信息回调"+msg.what);
+            OtaLog.LOGOta("升级界面","当前信息回调"+msg.what);
             //如果这里是false 说明已经有返回了  不需要继续处理
             if(!is_loading_version_data){
                 return;
@@ -652,7 +652,7 @@ public class SystemUpgradeFragment extends Fragment {
                 }
 
             } else if (msg.what == GET_INFO_TIMEOUT) {
-                OtaLog.LOGOta("=====","=========  获取超时");
+                OtaLog.LOGOta("升级界面","获取超时");
                 showView(VIEW_STATE_NO_DATA);
 
             } else {
@@ -706,7 +706,7 @@ public class SystemUpgradeFragment extends Fragment {
         if (OtaConstant.TEST_URL_FLAG) {
             reqUrl = OtaConstant.TEST_URL.replace("{version}",OtaTool.getProperty("ro.cvte.customer.version", "100"));
         }
-        OtaLog.LOGOta("请求Ota包信息url","======="+ reqUrl);
+        OtaLog.LOGOta("请求Ota包信息url","url地址"+ reqUrl);
         String content = "";
         String miwen = "";
         String mingwen = "";
@@ -721,7 +721,7 @@ public class SystemUpgradeFragment extends Fragment {
             JSONObject jo = new JSONObject(content);
             miwen = jo.getString("message");
             mingwen = otaUpgradeUtil.Decrypt(miwen, OtaConstant.PASSWORD);
-            OtaLog.LOGOta("请求Ota包信息返回数据","======="+ mingwen);
+            OtaLog.LOGOta("请求Ota包信息返回数据",""+ mingwen);
         } catch (IOException e) {
             e.printStackTrace();
             checkhandler.sendEmptyMessage(ERROR_INVALID_PACKAGE);
@@ -743,7 +743,7 @@ public class SystemUpgradeFragment extends Fragment {
     }
 
     public void updateUI(){
-        OtaLog.LOGOta("====","========== 上一个状态"+last_view_munber);
+        OtaLog.LOGOta("升级界面","上一个状态"+last_view_munber);
         if(last_view_munber == VIEW_WIFI_NO_OPEN || last_view_munber == VIEW_STATE_NO_DATA || last_view_munber == VIEW_DOWN_COMPLETE){
             showView(VIEW_STATE_LOADING);
 

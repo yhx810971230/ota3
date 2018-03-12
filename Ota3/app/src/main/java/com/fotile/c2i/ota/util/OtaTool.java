@@ -5,11 +5,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.StatFs;
 import android.text.TextUtils;
 
@@ -353,7 +356,7 @@ public class OtaTool {
                     //判断下载完成，文件已经保存了一份
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
-                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
+                        OtaLog.LOGOta("本地文件已经存在","本地存在ota文件");
                         String filemd5 = ""+otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
@@ -422,7 +425,7 @@ public class OtaTool {
                     File file222 = new File(OtaConstant.FILE_NAME_OTA);
                     if (file222.exists()) {
                         outputinfo += "本地数据文件存在：    \n";
-                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
+                        OtaLog.LOGOta("本地文件已经存在","本地存在ota文件");
                         String filemd5 = ""+ otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             outputinfo += "本地数据文件匹配:(不会下载    \n";
@@ -445,7 +448,7 @@ public class OtaTool {
                     //判断下载完成，文件已经保存了一份
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
-                        OtaLog.LOGOta("== 本地文件已经存在","======== 本地存在ota文件");
+                        OtaLog.LOGOta("本地文件已经存在"," 本地存在ota文件");
                         String filemd5 =""+ otaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
@@ -482,7 +485,7 @@ public class OtaTool {
         }else {
             mac = mac.substring(6,12);
         }
-        OtaLog.LOGOta("===========","========mac = "+mac+"==== time"+Integer.parseInt(mac ,16)%max_time);
+        OtaLog.LOGOta("mac地址","mac = "+mac+"time"+Integer.parseInt(mac ,16)%max_time);
         return Integer.parseInt(mac ,16)%max_time;
 
     }
@@ -502,7 +505,7 @@ public class OtaTool {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         OtaLog.LOGOta("wifiInfo", wifiInfo.toString());
-        OtaLog.LOGOta("SSID+==","=====设置wifi ssid:"+wifiInfo.getSSID());
+        OtaLog.LOGOta("SSID","设置wifi ssid:"+wifiInfo.getSSID());
         if(wifiInfo.getSSID()==null || wifiInfo.getSSID().equals("0x")){
             return "";
         }
@@ -609,7 +612,7 @@ public class OtaTool {
             }
         }
         boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles(context));
-        OtaLog.LOGOta("====","========== 是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
+        OtaLog.LOGOta("小红点","是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
     }
 
@@ -629,7 +632,7 @@ public class OtaTool {
         long blockSize = stat.getBlockSize();
         long totalBlockCount = stat.getBlockCount();
         long feeBlockCount = stat.getAvailableBlocks();
-        OtaLog.LOGOta("====","===== 当前可用空间 ："+blockSize * feeBlockCount/1024/1024/1024+"GB");
+        OtaLog.LOGOta("当前可见","当前可用空间 ："+blockSize * feeBlockCount/1024/1024/1024+"GB");
         return new DiskStat(blockSize * feeBlockCount, blockSize
                 * totalBlockCount);
     }
@@ -659,7 +662,7 @@ public class OtaTool {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        OtaLog.LOGOta("=====","===== 网络文件大小 :----"+length);
+        OtaLog.LOGOta("ota文件大小"," 网络文件大小 :----"+length);
         return length;
     }
     /**
@@ -729,5 +732,38 @@ public class OtaTool {
         return bool;
     }
 
+    /**获取meta-data数据*
+     * @param metaKey
+     */
 
+    public static String getMetaValue(Context context, String metaKey) {
+        Bundle metaData = null;
+        String metaValue = null;
+        if (context == null || metaKey == null) {
+            return null;
+        }
+        try {
+            OtaLog.LOGOta("当前包名：","当前包名开始获取");
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
+            if (null != ai) {
+                metaData = ai.metaData;
+            }else {
+                OtaLog.LOGOta("当前包名：","metadata 为空");
+            }
+            if (null != metaData) {
+                OtaLog.LOGOta("当前包名：","开始根据key获取值");
+                metaValue = metaData.getString(metaKey);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+
+        }
+
+        if(metaValue != null){
+            return metaValue;
+        }else {
+            return OtaConstant.TEST_PACKAGE_NAME;
+        }
+
+    }
 }

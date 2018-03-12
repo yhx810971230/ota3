@@ -235,7 +235,7 @@ public class DownLoadService extends Service {
 
                                 }else {//ota校验失败
 
-                                    OtaLog.LOGOta("下载完成", "=========== 固件包md5校验失败");
+                                    OtaLog.LOGOta("下载完成", "固件包md5校验失败");
                                     OtaTool.delectFile();
                                     otaFileInfo.errorMsg = OtaConstant.MD5_CHECK_ERROR;
                                     if (!show_complete_tip) {
@@ -262,7 +262,7 @@ public class DownLoadService extends Service {
                                 OtaTool.delectFile();
                                 otaFileInfo.errorMsg = OtaConstant.MCU_MD5_CHECK_ERROR;
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
-                                OtaLog.LOGOta("下载完成", "========= mcu包md5校验失败");
+                                OtaLog.LOGOta("下载完成", " mcu包md5校验失败");
                                 if (!show_complete_tip) {
                                     show_complete_tip = true;
                                     OtaTopSnackBar.make(DownLoadService.this, "电源固件下载中已损坏，请重新下载", OtaTopSnackBar
@@ -309,16 +309,16 @@ public class DownLoadService extends Service {
 
         boolean check_md5_ota = false;
         File file_ota = new File(file_name_ota);
-        OtaLog.LOGOta("=====","===========当前的"+md5 + "文件的是否存在:"+file_ota.exists());
+        OtaLog.LOGOta("md5校验","当前的"+md5 + "文件的是否存在:"+file_ota.exists());
         if (file_ota.exists()) {
             String str_md5_ota = new OtaUpgradeUtil().md5sum(file_ota.getPath());
-            OtaLog.LOGOta("=====","===========当前的"+md5 + "文件的md5:"+str_md5_ota);
+            OtaLog.LOGOta("md5校验","当前的"+md5 + "文件的md5:"+str_md5_ota);
             if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(md5)) {
                 check_md5_ota = true;
                 OtaLog.LOGOta("固件包md5校验成功", "true");
             }
         }
-        OtaLog.LOGOta("=====","===========当前的返回结果"+check_md5_ota);
+        OtaLog.LOGOta("md5校验","当前的返回结果"+check_md5_ota);
         return check_md5_ota;
     }
     //判断ota文件是否存在
