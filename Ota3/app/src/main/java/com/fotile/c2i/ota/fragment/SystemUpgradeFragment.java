@@ -196,7 +196,7 @@ public class SystemUpgradeFragment extends Fragment {
                 FileInfo fileInfo = otaFileInfo.fileInfo;
                 if(otaFileInfo.errorMsg!=null && (otaFileInfo.errorMsg.equals(OtaConstant.MD5_CHECK_ERROR)||otaFileInfo.errorMsg.equals(OtaConstant.MCU_MD5_CHECK_ERROR))){
                     showView(VIEW_STATE_LOADING);
-                    startInitLogic();
+                    startInitLogicThread();
                     return;
                 }else {
 
@@ -244,6 +244,7 @@ public class SystemUpgradeFragment extends Fragment {
         }
         cancelNetTimer();
         checkhandler.removeCallbacksAndMessages(null);
+        showViewhandler.removeCallbacksAndMessages(null);
     }
 
 
@@ -261,7 +262,7 @@ public class SystemUpgradeFragment extends Fragment {
                 //如果文件不存在，并且服务状态是完成状态，表示下载完了被清空了
                 if (!checkDownloadFileExists() && state == DownloadStatus.COMPLETE) {
                     showView(VIEW_STATE_LOADING);
-                    startInitLogic();
+                    startInitLogicThread();
                 }
             }
 
@@ -354,7 +355,7 @@ public class SystemUpgradeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showView(VIEW_STATE_LOADING);
-                startInitLogic();
+                startInitLogicThread();
             }
         });
 
@@ -433,7 +434,7 @@ public class SystemUpgradeFragment extends Fragment {
 
         showView(VIEW_STATE_LOADING);
         otaUpgradeUtil = new OtaUpgradeUtil();
-        startInitLogic();
+        startInitLogicThread();
         DownLoadService.setShow_downing_tip(false);
 
     }
@@ -457,6 +458,7 @@ public class SystemUpgradeFragment extends Fragment {
         File file = new File(OtaConstant.FILE_NAME_OTA);
         //网络断开且有本地文件
         if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
+            showViewhandler.sendEmptyMessage(VIEW_STATE_LOADING);
             if( otaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
                 if(mInfo == null){
                     mInfo = new UpgradeInfo();
@@ -469,13 +471,13 @@ public class SystemUpgradeFragment extends Fragment {
                 }else {
                     mInfo.ex_url="";
                 }
-                showView(VIEW_DOWN_COMPLETE);
+                showViewhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
                 return;
             }
         }
         //网络断开
         if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED || TextUtils.isEmpty(OtaTool.getConnectWifiSsid(getActivity())) ){
-            showView(VIEW_WIFI_NO_OPEN);
+            showViewhandler.sendEmptyMessage(VIEW_WIFI_NO_OPEN);
             return;
         }
 
@@ -483,10 +485,10 @@ public class SystemUpgradeFragment extends Fragment {
         //网络可用
         if (OtaTool.isNetworkAvailable(getActivity())) {
             is_loading_version_data = true;
-            showView(VIEW_STATE_LOADING);
+            showViewhandler.sendEmptyMessage(VIEW_STATE_LOADING);
             getParams();
         } else {
-            showView(VIEW_STATE_NO_DATA);
+            showViewhandler.sendEmptyMessage(VIEW_STATE_NO_DATA);
             OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
         }
     }
@@ -665,7 +667,25 @@ public class SystemUpgradeFragment extends Fragment {
 
         }
     };
+    /**
+     * 固件包升级信息回调
+     * 进入该回调，mInfo有值了
+     */
+    private Handler showViewhandler = new Handler() {
+        public void handleMessage(android.os.Message msg) {
+            if (msg.what == VIEW_DOWN_COMPLETE) {
+                showView(VIEW_DOWN_COMPLETE);
+            } else if (msg.what == VIEW_WIFI_NO_OPEN) {
+                showView(VIEW_WIFI_NO_OPEN);
+            } else if (msg.what == VIEW_STATE_LOADING) {
+                showView(VIEW_STATE_LOADING);
+            } else if (msg.what == VIEW_STATE_NO_DATA) {
+                showView(VIEW_STATE_NO_DATA);
+            }
+        }
 
+
+    };
 
     /**
      * 获取升级包信息
@@ -750,7 +770,7 @@ public class SystemUpgradeFragment extends Fragment {
         if(last_view_munber == VIEW_WIFI_NO_OPEN || last_view_munber == VIEW_STATE_NO_DATA || last_view_munber == VIEW_DOWN_COMPLETE){
             showView(VIEW_STATE_LOADING);
 
-            startInitLogic();
+            startInitLogicThread();
         }
     }
 
