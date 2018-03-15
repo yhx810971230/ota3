@@ -458,8 +458,9 @@ public class SystemUpgradeFragment extends Fragment {
         File file = new File(OtaConstant.FILE_NAME_OTA);
         //网络断开且有本地文件
         if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
-            showViewhandler.sendEmptyMessage(VIEW_STATE_LOADING);
+            OtaLog.LOGOta("升级界面"," 开始校验md5");
             if( otaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
+                OtaLog.LOGOta("升级界面"," 校验md5 完成 成功");
                 if(mInfo == null){
                     mInfo = new UpgradeInfo();
                 }
@@ -474,6 +475,7 @@ public class SystemUpgradeFragment extends Fragment {
                 showViewhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
                 return;
             }
+            OtaLog.LOGOta("升级界面"," 校验md5 完成 失败");
         }
         //网络断开
         if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED || TextUtils.isEmpty(OtaTool.getConnectWifiSsid(getActivity())) ){
@@ -631,15 +633,8 @@ public class SystemUpgradeFragment extends Fragment {
 
                 //有可更新的固件包
             } else if (msg.what == NEW_INVALID_PACKAGE) {
-                File file = new File(OtaConstant.FILE_NAME_OTA);
-                //网络断开且有本地文件
-                if (file.exists() && OtaTool.checkDownloadFileMd5(mInfo)){
-                    checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
-                    if(null != otaListener){
-                        otaListener.onDownloadCompleted(mInfo.name);
-                    }
-                    return;
-                }
+                OtaLog.LOGOta("===升级界面","当前的工作状态："+"进入有可更新固件 且没有本地文件");
+
                 showView(VIEW_STATE_NEW_PACKAGE);
                 if(getActivity()!=null){
                     OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
@@ -659,6 +654,7 @@ public class SystemUpgradeFragment extends Fragment {
                 showView(VIEW_STATE_NO_DATA);
 
             } else if(msg.what == VIEW_DOWN_COMPLETE) { //下载完成
+                OtaLog.LOGOta("===升级界面","当前的工作状态："+"进入有可更新固件 且本地文件已经校验通过");
                 showView(VIEW_DOWN_COMPLETE);
             }
 
@@ -695,13 +691,7 @@ public class SystemUpgradeFragment extends Fragment {
         check_version_code = OtaTool.getProperty("ro.cvte.customer.version", "100");
         //校验mac地址
         check_mac_address = OtaTool.getLocalMacAddress();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getUpgradeInfo();
-            }
-        }).start();
+        getUpgradeInfo();
     }
 
 
@@ -760,6 +750,15 @@ public class SystemUpgradeFragment extends Fragment {
         mInfo = parser.fromJson(mingwen, UpgradeInfo.class);
         //这个是获取网络文件大小，应该让后台改，实在不行在这里改一下
         //mInfo.size = String.valueOf( OtaTool.getFileLength(mInfo.url));
+        File file = new File(OtaConstant.FILE_NAME_OTA);
+        //网络断开且有本地文件
+        if (file.exists() && OtaTool.checkDownloadFileMd5(mInfo)){
+            checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
+            if(null != otaListener){
+                otaListener.onDownloadCompleted(mInfo.name);
+            }
+            return;
+        }
         checkhandler.sendEmptyMessage(NEW_INVALID_PACKAGE);
     }
 
