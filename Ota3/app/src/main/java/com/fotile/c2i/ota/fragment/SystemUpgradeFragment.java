@@ -631,6 +631,15 @@ public class SystemUpgradeFragment extends Fragment {
 
                 //有可更新的固件包
             } else if (msg.what == NEW_INVALID_PACKAGE) {
+                File file = new File(OtaConstant.FILE_NAME_OTA);
+                //网络断开且有本地文件
+                if (file.exists() && OtaTool.checkDownloadFileMd5(mInfo)){
+                    checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
+                    if(null != otaListener){
+                        otaListener.onDownloadCompleted(mInfo.name);
+                    }
+                    return;
+                }
                 showView(VIEW_STATE_NEW_PACKAGE);
                 if(getActivity()!=null){
                     OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
@@ -643,17 +652,6 @@ public class SystemUpgradeFragment extends Fragment {
 
                 }else if (state == DownloadStatus.ERROR) {//如果当前后台下载错误
                     showView(VIEW_DOWN_ERROR);
-                }else if (  null != otaListener) { //判断后台下载完成，文件已经保存了一份
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(OtaTool.checkDownloadFileMd5(mInfo)){
-                                otaListener.onDownloadCompleted(mInfo.name);
-                                checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
-                            }
-                        }
-                    }).start();
-
                 }
 
             } else if (msg.what == GET_INFO_TIMEOUT) {
