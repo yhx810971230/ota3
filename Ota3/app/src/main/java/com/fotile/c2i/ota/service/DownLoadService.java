@@ -86,6 +86,9 @@ public class DownLoadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         initData();
+        if(intent == null || intent.getExtras() == null){
+            return super.onStartCommand(intent, flags, startId);
+        }
         url = intent.getExtras().getString("url");
         md5 = intent.getExtras().getString("md5");
         ex_url = intent.getExtras().getString("ex_url");

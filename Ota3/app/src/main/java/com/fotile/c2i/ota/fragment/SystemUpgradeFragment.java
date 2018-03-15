@@ -647,7 +647,7 @@ public class SystemUpgradeFragment extends Fragment {
                         public void run() {
                             if(OtaTool.checkDownloadFileMd5(mInfo)){
                                 otaListener.onDownloadCompleted(mInfo.name);
-                                showView(VIEW_DOWN_COMPLETE);
+                                checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
                             }
                         }
                     }).start();
@@ -658,8 +658,8 @@ public class SystemUpgradeFragment extends Fragment {
                 OtaLog.LOGOta("升级界面","获取超时");
                 showView(VIEW_STATE_NO_DATA);
 
-            } else {
-
+            } else if(msg.what == VIEW_DOWN_COMPLETE) { //下载完成
+                showView(VIEW_DOWN_COMPLETE);
             }
 
 
