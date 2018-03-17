@@ -50,6 +50,7 @@ public class HttpUtil {
     /**获取otaflag**/
     public static boolean isNewState(final Context context){
         Map<String,String> map =HttpUtil.getStateFromFile();
+        OtaLog.LOGOta("===当前文件状态","当前ota状态"+map.get(OTA_STATE)+",当前recipes_url"+map.get(RECIPES_URL));
         return Boolean.valueOf(map.get(OTA_STATE));
 //        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
 //        return sharedPreferences.getBoolean(NEW_STATE_NAME,false);
@@ -57,6 +58,7 @@ public class HttpUtil {
     /**获取菜谱flag**/
     public static String getRecipesUrl(){
         Map<String,String> map =HttpUtil.getStateFromFile();
+        OtaLog.LOGOta("===当前文件状态","当前ota状态"+map.get(OTA_STATE)+",当前recipes_url"+map.get(RECIPES_URL));
         return map.get(RECIPES_URL);
 //        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
 //        return sharedPreferences.getBoolean(NEW_STATE_NAME,false);
@@ -82,7 +84,7 @@ public class HttpUtil {
             FileOutputStream fos = new FileOutputStream(file1);
             //写数据
             fos.write((String.valueOf(ota_flag) + DEPART + recipes_url).getBytes());
-
+            OtaLog.LOGOta("===当前文件状态","写入成功======");
             //关闭文件流
             fos.close();
             return true;
@@ -93,7 +95,6 @@ public class HttpUtil {
         }
     }
     /**
-     * @param null
      * @return  Map<String, String>
      * 返回的前面一个是ota状态，后面是网址，
      * 默认 ota false，网址“”；
@@ -132,13 +133,15 @@ public class HttpUtil {
             }else if(results.length == 1){
                 userMap.put(OTA_STATE, results[0]);
                 userMap.put(RECIPES_URL, "");
-                OtaLog.LOGOta("===当前文件状态","当前ota状态"+results[0]+",当前recipes_url"+"");
+                OtaLog.LOGOta("===当前文件状态","当前ota状态 没有菜谱url"+results[0]+",当前recipes_url"+"");
             }
+            br.close();
+            fis.close();
             return userMap;
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            OtaLog.LOGOta("===当前文件状态","当前ota状态 false ");
+            OtaLog.LOGOta("===当前文件状态","当前ota状态 false  出现读取异常");
             Map<String, String> userMap = new HashMap<String, String>();
             userMap.put(OTA_STATE, "false");
             userMap.put(RECIPES_URL, "");
