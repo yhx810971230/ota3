@@ -204,7 +204,9 @@ public class SystemUpgradeFragment extends Fragment {
                 switch (fileInfo.getStatus()) {
                     //开始下载
                     case DownloadStatus.START:
-
+                        updateDownloadValue(VIEW_DOWN_DOWNING);
+                        pbar_download.setMax(fileInfo.getTotalBytes());
+                        pbar_download.setProgress(fileInfo.getLoadBytes());
                         break;
                     //正在下载
                     case DownloadStatus.DOWNLOADING:
