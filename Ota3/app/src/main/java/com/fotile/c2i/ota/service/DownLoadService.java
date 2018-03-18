@@ -65,7 +65,8 @@ public class DownLoadService extends Service {
 
     private static int state = DownloadStatus.NORMAL;
 
-
+    private float last_progress = 0;
+    private static final float  INTERVAL = 0.005f;
     /**
      * 标志位，控制顶部提示只显示一次
      */
@@ -364,6 +365,7 @@ public class DownLoadService extends Service {
         @Override
         public void onStart(FileInfo fileInfo) {
             OtaLog.LOGOta("InstallAc", "ListenerWrapper = 准备中--->" + fileInfo.getUrl());
+            last_progress = 0f;
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
             uiHandler.sendMessage(msg);
@@ -372,10 +374,16 @@ public class DownLoadService extends Service {
         @Override
         public void onUpdate(FileInfo fileInfo) {
             float progress = getProgress(fileInfo.getLoadBytes(), fileInfo.getTotalBytes());
-            OtaLog.LOGOta("InstallAc", "ListenerWrapper = 下载中--->" + progress);
-            Message msg = uiHandler.obtainMessage();
-            msg.obj = new OtaFileInfo(fileInfo, "");
-            uiHandler.sendMessage(msg);
+            if(Math.abs(progress - last_progress) > INTERVAL){
+                OtaLog.LOGOta("InstallAc", "ListenerWrapper = 下载中--->" + progress);
+                Message msg = uiHandler.obtainMessage();
+                msg.obj = new OtaFileInfo(fileInfo, "");
+                uiHandler.sendMessage(msg);
+                last_progress = progress;
+            }else {
+                OtaLog.LOGOta("InstallAc", "ListenerWrapper = 下载中--->" + progress);
+            }
+
         }
 
         @Override
@@ -388,6 +396,7 @@ public class DownLoadService extends Service {
 
         @Override
         public void onComplete(FileInfo fileInfo) {
+            last_progress = 100f;
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
             uiHandler.sendMessage(msg);
@@ -395,6 +404,7 @@ public class DownLoadService extends Service {
 
         @Override
         public void onCancel(FileInfo fileInfo) {
+            last_progress = 0f;
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
             uiHandler.sendMessage(msg);
