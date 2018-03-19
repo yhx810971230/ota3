@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,15 +82,21 @@ public class HttpUtil {
         try {
             //文件输出流
             FileOutputStream fos = new FileOutputStream(file1);
+            OutputStreamWriter osw = new OutputStreamWriter(fos,"utf-8");
+
             //写数据
-            fos.write((String.valueOf(ota_flag) + DEPART + recipes_url).getBytes());
-            OtaLog.LOGOta("===当前文件状态","写入成功======");
+            osw.write((String.valueOf(ota_flag) + DEPART + recipes_url));
+            osw.flush();
+            fos.flush();
             //关闭文件流
+            osw.close();
             fos.close();
+            OtaLog.LOGOta("===当前文件状态","写入成功======");
             return true;
         } catch (Exception e) {
             OtaLog.LOGOta("===当前文件状态","失败1111");
             e.printStackTrace();
+            OtaLog.LOGOta("===当前文件状态","失败1111222");
             return false;
         }
     }
@@ -119,13 +125,24 @@ public class HttpUtil {
         try {
             //输入流
             FileInputStream fis = new FileInputStream(file1);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            InputStreamReader isr = new InputStreamReader(fis,"utf-8");
+            Map<String, String> userMap = new HashMap<String, String>();
+            char input[] = new char[fis.available()];
+            isr.read(input);
             //读取文件中的内容
-            String result = br.readLine();
+            String result = new String(input);
+            isr.close();
+            fis.close();
             //拆分成String[]
+            if( result.length() ==0){
+                OtaLog.LOGOta("===当前文件状态","当前文件读取出来的数据为空");
+                userMap.put(OTA_STATE, "false");
+                userMap.put(RECIPES_URL,"");
+                return userMap;
+            }
             String[] results = result.split(DEPART);
             //将数据存到map集合中
-            Map<String, String> userMap = new HashMap<String, String>();
+
             if(results!=null && results.length == 2){
                 userMap.put(OTA_STATE, results[0]);
                 userMap.put(RECIPES_URL, results[1]);
@@ -135,8 +152,8 @@ public class HttpUtil {
                 userMap.put(RECIPES_URL, "");
                 OtaLog.LOGOta("===当前文件状态","当前ota状态 没有菜谱url"+results[0]+",当前recipes_url"+"");
             }
-            br.close();
-            fis.close();
+
+
             return userMap;
         } catch (Exception e) {
             // TODO Auto-generated catch block
