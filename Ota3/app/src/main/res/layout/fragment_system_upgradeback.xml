@@ -113,7 +113,7 @@
     </RelativeLayout>
     <!-- 有 新版本    重试    下载完成view-->
     <RelativeLayout
-        android:visibility="visible"
+        android:visibility="gone"
         android:id="@+id/layout_main_completed"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
