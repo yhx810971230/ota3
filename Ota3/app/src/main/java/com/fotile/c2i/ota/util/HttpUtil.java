@@ -25,8 +25,8 @@ import static android.content.Context.MODE_PRIVATE;
 public class HttpUtil {
     private static String NEW_STATE_SHARED = "new_state_shared";
     private static String NEW_STATE_NAME = "now_state";
-    public final static String FILE_STATE_DIR =   Environment.getExternalStorageDirectory().getPath() +"/fotile/";
-    public final static String FILE_STATE_NAME =  "info.txt";
+    public final static String FILE_STATE_DIR =   Environment.getExternalStorageDirectory().getPath() +"/fotile";
+    public final static String FILE_STATE_NAME =  "/info.txt";
     public final static String DEPART = "######";
     /**当前ota状态**/
     public final static String OTA_STATE = "ota_state";
@@ -69,15 +69,21 @@ public class HttpUtil {
         if(!file.exists()){
             OtaLog.LOGOta("===当前文件状态","创建文件夹");
             file.mkdirs();
+        }else {
+            OtaLog.LOGOta("===当前文件状态","文件夹已经存在");
         }
         File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
         if(!file1.exists()){
-            OtaLog.LOGOta("===当前文件状态","创建文件");
+
             try {
+                OtaLog.LOGOta("===当前文件状态","创建文件"+file1);
                 file1.createNewFile();
             } catch (IOException e) {
+                OtaLog.LOGOta("===当前文件状态","创建文件失败"+file1);
                 e.printStackTrace();
             }
+        } else {
+            OtaLog.LOGOta("===当前文件状态","文件已经存在"+file1);
         }
         try {
             //文件输出流
@@ -92,6 +98,7 @@ public class HttpUtil {
             osw.close();
             fos.close();
             OtaLog.LOGOta("===当前文件状态","写入成功======");
+            getStateFromFile();
             return true;
         } catch (Exception e) {
             OtaLog.LOGOta("===当前文件状态","失败1111");
@@ -111,6 +118,8 @@ public class HttpUtil {
         if(!file.exists()){
             OtaLog.LOGOta("===当前文件状态","创建文件夹2222");
             file.mkdirs();
+        }else {
+            OtaLog.LOGOta("===当前文件状态","文件夹2222存在");
         }
         File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
         if(!file1.exists()){
