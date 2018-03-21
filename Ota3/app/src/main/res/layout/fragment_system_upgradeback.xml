@@ -113,7 +113,7 @@
     </RelativeLayout>
     <!-- 有 新版本    重试    下载完成view-->
     <RelativeLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:id="@+id/layout_main_completed"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -124,7 +124,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="70px"
+            android:layout_marginBottom="40px"
             android:orientation="horizontal">
 
             <com.fotile.c2i.ota.view.OtaThinButton
@@ -191,6 +191,7 @@
             <com.fotile.c2i.ota.view.OtaThinTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:id="@+id/download_finish_tips"
                 android:layout_marginTop="15px"
                 android:alpha="0.6"
                 android:text="已下载"

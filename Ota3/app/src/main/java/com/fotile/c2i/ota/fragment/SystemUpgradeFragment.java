@@ -99,6 +99,8 @@ public class SystemUpgradeFragment extends Fragment {
     Button set_wifi;
     /** 链接错误按钮 重试**/
     Button retry;
+    /** 下载完成提示 */
+    TextView txt_update_download_finish;
     public static final int NO_INVALID_PACKAGE = 0;//无新的升级包
     public static final int NEW_INVALID_PACKAGE = 1;//有新的升级包
     public static final int ERROR_INVALID_PACKAGE = 2;//获取数据异常
@@ -310,13 +312,19 @@ public class SystemUpgradeFragment extends Fragment {
         btn_upgrade_later.setVisibility(View.GONE);
         update_bottom.setVisibility(View.GONE);
         update_retry_bottom.setVisibility(View.GONE);
+
         if(type == VIEW_STATE_NEW_PACKAGE){
+            txt_update_download_finish.setVisibility(View.INVISIBLE);
             update_bottom.setVisibility(View.VISIBLE);
         }else if(type == VIEW_DOWN_COMPLETE){
+            txt_update_download_finish.setVisibility(View.VISIBLE);
             btn_upgrade_now.setVisibility(View.VISIBLE);
             btn_upgrade_later.setVisibility(View.VISIBLE);
         }else if(type == VIEW_DOWN_ERROR){
+            txt_update_download_finish.setVisibility(View.INVISIBLE);
             update_retry_bottom.setVisibility(View.VISIBLE);
+        }else {
+            txt_update_download_finish.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -340,7 +348,7 @@ public class SystemUpgradeFragment extends Fragment {
         set_wifi = (Button) view.findViewById(R.id.set_wifi);
         retry = (Button) view.findViewById(R.id.retry);
         tv_tips = (TextView)view.findViewById(R.id.tv_tips);
-
+        txt_update_download_finish = (TextView)view.findViewById(R.id.download_finish_tips);
         /*************************  去设置wifi  ****************/
         set_wifi.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -766,7 +774,7 @@ public class SystemUpgradeFragment extends Fragment {
 
     public void updateUI(){
         OtaLog.LOGOta("升级界面","上一个状态"+last_view_munber);
-        if(last_view_munber == VIEW_WIFI_NO_OPEN || last_view_munber == VIEW_STATE_NO_DATA || last_view_munber == VIEW_DOWN_COMPLETE){
+        if((last_view_munber != -1) && (last_view_munber == VIEW_WIFI_NO_OPEN || last_view_munber == VIEW_STATE_NO_DATA || last_view_munber == VIEW_DOWN_COMPLETE)){
             showView(VIEW_STATE_LOADING);
 
             startInitLogicThread();
