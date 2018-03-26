@@ -222,7 +222,7 @@ public class DownLoadService extends Service {
                                 ota_file_check_flag = checkOtamd5();
                                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                 long downloadtime = System.currentTimeMillis();
-                                final String nowtime = df.format(downloadtime) + "下载完成";
+                                final String nowtime = df.format(downloadtime) + "complete";
                                 OtaTool.writeDownloadInfo(nowtime+String.valueOf(ota_file_check_flag),String.valueOf(ota_file_check_flag));
                                 send_Fregment_change = true ;//这里设置为真，表面OTa 文件校验过 下次就不会进入
                                 if (ota_file_check_flag) {
