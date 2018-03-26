@@ -666,6 +666,9 @@ public class SystemUpgradeFragment extends Fragment {
             } else if(msg.what == VIEW_DOWN_COMPLETE) { //下载完成
                 OtaLog.LOGOta("===升级界面","当前的工作状态："+"进入有可更新固件 且本地文件已经校验通过");
                 showView(VIEW_DOWN_COMPLETE);
+                if(null != otaListener){
+                    otaListener.onDownloadCompleted(mInfo.name);
+                }
             }
 
 
@@ -764,9 +767,7 @@ public class SystemUpgradeFragment extends Fragment {
         //网络断开且有本地文件
         if (file.exists() && OtaTool.checkDownloadFileMd5(mInfo)){
             checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
-            if(null != otaListener){
-                otaListener.onDownloadCompleted(mInfo.name);
-            }
+
             return;
         }
         checkhandler.sendEmptyMessage(NEW_INVALID_PACKAGE);
