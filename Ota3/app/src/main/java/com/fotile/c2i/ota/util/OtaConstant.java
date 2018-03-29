@@ -54,6 +54,7 @@ public class OtaConstant {
     public static final String MCU_MD5_CHECK_ERROR = "mcu_md5_check_error";
     public static final String DOWNLOAD_COMPLETE = "complete";
     public static final String DOWNLOAD_COMPLETE_ERROR = "complete_error";
+    public static final String NO_DOWNLOAD = "no_download";
     public static final String TEST_PACKAGE_NAME = "com.OTAceshi";
     public static final String SYS_OF_PACKAGE ="com.fotile.c2i.ota.package";
     //    @Subscribe(threadMode = ThreadMode.MAIN)

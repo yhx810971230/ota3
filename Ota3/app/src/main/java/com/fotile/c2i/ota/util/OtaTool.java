@@ -18,11 +18,13 @@ import android.text.TextUtils;
 
 import com.dl7.downloaderlib.FileDownloader;
 import com.fotile.c2i.ota.bean.DiskStat;
+import com.fotile.c2i.ota.bean.DownloadEvent;
 import com.fotile.c2i.ota.bean.UpgradeInfo;
 import com.fotile.c2i.ota.service.DownLoadService;
 import com.fotile.c2i.ota.service.DownloadAction;
 import com.google.gson.Gson;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -614,6 +616,18 @@ public class OtaTool {
         boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles(context));
         OtaLog.LOGOta("小红点","是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
+    }
+    public static void checkDownloadTips(final Context context){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(showTips(context)){
+                    EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
+                }else {
+                    EventBus.getDefault().post(new DownloadEvent(OtaConstant.NO_DOWNLOAD,"未下载，或下载损坏"));
+                }
+            }
+        }).start();
     }
 
     /**
