@@ -25,13 +25,15 @@ import static android.content.Context.MODE_PRIVATE;
 public class HttpUtil {
     private static String NEW_STATE_SHARED = "new_state_shared";
     private static String NEW_STATE_NAME = "now_state";
-    public final static String FILE_STATE_DIR =   Environment.getExternalStorageDirectory().getPath() +"/fotile";
+    public final static String FILE_STATE_DIR =   Environment.getExternalStorageDirectory().getPath() +"/ota";
     public final static String FILE_STATE_NAME =  "/info.txt";
     public final static String DEPART = "######";
     /**当前ota状态**/
     public final static String OTA_STATE = "ota_state";
     public final static String RECIPES_URL = "recipes_url";
     public static boolean NEW_STATE = false;
+    // 默认状态
+    public final static String DEFLUT_STATE = "false";
     public static boolean isNewState() {
         return NEW_STATE;
     }
@@ -85,10 +87,12 @@ public class HttpUtil {
         } else {
             OtaLog.LOGOta("===当前文件状态","文件已经存在"+file1);
         }
+        FileOutputStream fos = null;
+        OutputStreamWriter osw = null;
         try {
             //文件输出流
-            FileOutputStream fos = new FileOutputStream(file1);
-            OutputStreamWriter osw = new OutputStreamWriter(fos,"utf-8");
+            fos = new FileOutputStream(file1);
+            osw = new OutputStreamWriter(fos,"utf-8");
 
             //写数据
             osw.write((String.valueOf(ota_flag) + DEPART + recipes_url));
@@ -105,6 +109,21 @@ public class HttpUtil {
             e.printStackTrace();
             OtaLog.LOGOta("===当前文件状态","失败1111222");
             return false;
+        }finally {
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(osw != null){
+                try {
+                    osw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
     /**
@@ -124,17 +143,20 @@ public class HttpUtil {
         File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
         if(!file1.exists()){
             try {
-                OtaLog.LOGOta("===当前文件状态","创建文件2222");
-                file1.createNewFile();
+                boolean fk = file1.createNewFile();
+                OtaLog.LOGOta("===当前文件状态","创建文件2222"+fk);
+
             } catch (IOException e) {
                 OtaLog.LOGOta("===当前文件状态","创建文件2222失败");
                 e.printStackTrace();
             }
         }
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
         try {
             //输入流
-            FileInputStream fis = new FileInputStream(file1);
-            InputStreamReader isr = new InputStreamReader(fis,"utf-8");
+            fis = new FileInputStream(file1);
+            isr = new InputStreamReader(fis,"utf-8");
             Map<String, String> userMap = new HashMap<String, String>();
             char input[] = new char[fis.available()];
             isr.read(input);
@@ -143,10 +165,17 @@ public class HttpUtil {
             isr.close();
             fis.close();
             //拆分成String[]
-            if( result.length() ==0){
+            if(result == null ||  result.length() ==0){
                 OtaLog.LOGOta("===当前文件状态","当前文件读取出来的数据为空");
-                userMap.put(OTA_STATE, "false");
+                userMap.put(OTA_STATE, DEFLUT_STATE);
                 userMap.put(RECIPES_URL,"");
+                return userMap;
+            }
+            int i = result.indexOf(DEPART);
+            if(i == -1){    // 新文件夹
+                userMap.put(OTA_STATE, DEFLUT_STATE);
+                userMap.put(RECIPES_URL, "");
+                OtaLog.LOGOta("===当前文件状态","当前为新文件夹，返回默认情况");
                 return userMap;
             }
             String[] results = result.split(DEPART);
@@ -167,12 +196,49 @@ public class HttpUtil {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            OtaLog.LOGOta("===当前文件状态","进入异常读取");
             OtaLog.LOGOta("===当前文件状态","当前ota状态 false  出现读取异常");
+            File file12 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
+            if(!file12.exists()){
+                try {
+                    boolean result = file12.createNewFile();
+                    OtaLog.LOGOta("===当前文件状态","创建文件3333"+result);
+
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    Map<String, String> userMap = new HashMap<String, String>();
+                    userMap.put(OTA_STATE, "false");
+                    userMap.put(RECIPES_URL, "");
+                    return userMap;
+                }
+            }
             Map<String, String> userMap = new HashMap<String, String>();
             userMap.put(OTA_STATE, "false");
             userMap.put(RECIPES_URL, "");
             return userMap;
+        }finally {
+            if( fis != null){
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(isr != null){
+                try {
+                    isr.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
+    public static void RemoveInfo(){
+        File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
+        if(!file1.exists()){
+            final boolean delete = file1.delete();
+        }
+    }
+
 
 }
