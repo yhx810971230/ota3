@@ -32,8 +32,20 @@ public class HttpUtil {
     public final static String OTA_STATE = "ota_state";
     public final static String RECIPES_URL = "recipes_url";
     public static boolean NEW_STATE = false;
+    /** 当前版本号*/
+    public final static String VERSION = "version";
+    public static int version_code = -1;
     // 默认状态
     public final static String DEFLUT_STATE = "false";
+
+    public static int getVersion_code() {
+        return version_code;
+    }
+
+    public static void setVersion_code(int version_code) {
+        version_code = version_code;
+    }
+
     public static boolean isNewState() {
         return NEW_STATE;
     }
@@ -41,6 +53,26 @@ public class HttpUtil {
     public static void setNewState(boolean newState) {
         NEW_STATE = newState;
     }
+
+    /** 设置版本号*/
+    public static void SetVersion(final Context context,int version){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(VERSION,version);
+        editor.apply();
+        editor.commit();
+    }
+
+    /**
+     * 获取版本号
+     * @param context
+     * @return
+     */
+    public static int GetVersion(final Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
+        return sharedPreferences.getInt(NEW_STATE_NAME,-1);
+    }
+
     /**设置flag**/
     public static void setNewState(final Context context, boolean newState){
         SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
