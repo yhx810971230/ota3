@@ -1,8 +1,9 @@
 package com.fotile.c2i.ota.util;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Environment;
+
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,10 +11,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * @author ： panyw .
@@ -38,67 +35,16 @@ public class HttpUtil {
     // 默认状态
     public final static String DEFLUT_STATE = "false";
 
-    public static int getVersion_code() {
-        return version_code;
-    }
 
-    public static void setVersion_code(int version_code) {
-        version_code = version_code;
-    }
 
-    public static boolean isNewState() {
-        return NEW_STATE;
-    }
-
-    public static void setNewState(boolean newState) {
-        NEW_STATE = newState;
-    }
-
-    /** 设置版本号*/
-    public static void SetVersion(final Context context,int version){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(VERSION,version);
-        editor.apply();
-        editor.commit();
-    }
-
-    /**
-     * 获取版本号
-     * @param context
-     * @return
-     */
-    public static int GetVersion(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-        return sharedPreferences.getInt(VERSION,-1);
-    }
-
-    /**设置flag**/
-    public static void setNewState(final Context context, boolean newState){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(NEW_STATE_NAME,newState);
-        editor.apply();
-        editor.commit();
-    }
     /**获取otaflag**/
     public static boolean isNewState(final Context context){
-        Map<String,String> map =HttpUtil.getStateFromFile();
-        OtaLog.LOGOta("===当前文件状态","当前ota状态"+map.get(OTA_STATE)+",当前recipes_url"+map.get(RECIPES_URL));
-        return Boolean.valueOf(map.get(OTA_STATE));
-//        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-//        return sharedPreferences.getBoolean(NEW_STATE_NAME,false);
-    }
-    /**获取菜谱flag**/
-    public static String getRecipesUrl(){
-        Map<String,String> map =HttpUtil.getStateFromFile();
-        OtaLog.LOGOta("===当前文件状态","当前ota状态"+map.get(OTA_STATE)+",当前recipes_url"+map.get(RECIPES_URL));
-        return map.get(RECIPES_URL);
-//        SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-//        return sharedPreferences.getBoolean(NEW_STATE_NAME,false);
+       InfoBean infoBean =HttpUtil.getStateFromFile();
+        return infoBean.isOta_state();
+
     }
 
-    public static boolean setStateToFile(boolean ota_flag,String recipes_url){
+    public static boolean setStateToFile(boolean ota_flag,String recipes_url,int version_code){
         File file = new File(FILE_STATE_DIR);
         if(!file.exists()){
             OtaLog.LOGOta("===当前文件状态","创建文件夹");
@@ -125,9 +71,11 @@ public class HttpUtil {
             //文件输出流
             fos = new FileOutputStream(file1);
             osw = new OutputStreamWriter(fos,"utf-8");
+            InfoBean infoBean = new InfoBean(ota_flag,recipes_url,version_code);
 
+            String fileString = new Gson().toJson(infoBean,InfoBean.class);
             //写数据
-            osw.write((String.valueOf(ota_flag) + DEPART + recipes_url));
+            osw.write(fileString);
             osw.flush();
             fos.flush();
             //关闭文件流
@@ -159,12 +107,10 @@ public class HttpUtil {
         }
     }
     /**
-     * @return  Map<String, String>
-     * 返回的前面一个是ota状态，后面是网址，
-     * 默认 ota false，网址“”；
+     返回文件内容
      *
      * **/
-    public static Map<String, String> getStateFromFile(){
+    public static InfoBean getStateFromFile(){
         File file = new File(FILE_STATE_DIR);
         if(!file.exists()){
             OtaLog.LOGOta("===当前文件状态","创建文件夹2222");
@@ -189,7 +135,7 @@ public class HttpUtil {
             //输入流
             fis = new FileInputStream(file1);
             isr = new InputStreamReader(fis,"utf-8");
-            Map<String, String> userMap = new HashMap<String, String>();
+
             char input[] = new char[fis.available()];
             isr.read(input);
             //读取文件中的内容
@@ -199,32 +145,11 @@ public class HttpUtil {
             //拆分成String[]
             if(result == null ||  result.length() ==0){
                 OtaLog.LOGOta("===当前文件状态","当前文件读取出来的数据为空");
-                userMap.put(OTA_STATE, DEFLUT_STATE);
-                userMap.put(RECIPES_URL,"");
-                return userMap;
+               return new InfoBean();
             }
-            int i = result.indexOf(DEPART);
-            if(i == -1){    // 新文件夹
-                userMap.put(OTA_STATE, DEFLUT_STATE);
-                userMap.put(RECIPES_URL, "");
-                OtaLog.LOGOta("===当前文件状态","当前为新文件夹，返回默认情况");
-                return userMap;
-            }
-            String[] results = result.split(DEPART);
-            //将数据存到map集合中
+            InfoBean infoBean = new Gson().fromJson(result,InfoBean.class);
+            return infoBean;
 
-            if(results!=null && results.length == 2){
-                userMap.put(OTA_STATE, results[0]);
-                userMap.put(RECIPES_URL, results[1]);
-                OtaLog.LOGOta("===当前文件状态","当前ota状态"+results[0]+",当前recipes_url"+results[1]);
-            }else if(results.length == 1){
-                userMap.put(OTA_STATE, results[0]);
-                userMap.put(RECIPES_URL, "");
-                OtaLog.LOGOta("===当前文件状态","当前ota状态 没有菜谱url"+results[0]+",当前recipes_url"+"");
-            }
-
-
-            return userMap;
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -238,16 +163,12 @@ public class HttpUtil {
 
                 } catch (IOException e1) {
                     e1.printStackTrace();
-                    Map<String, String> userMap = new HashMap<String, String>();
-                    userMap.put(OTA_STATE, "false");
-                    userMap.put(RECIPES_URL, "");
-                    return userMap;
+
+
                 }
             }
-            Map<String, String> userMap = new HashMap<String, String>();
-            userMap.put(OTA_STATE, "false");
-            userMap.put(RECIPES_URL, "");
-            return userMap;
+
+            return new InfoBean();
         }finally {
             if( fis != null){
                 try {
