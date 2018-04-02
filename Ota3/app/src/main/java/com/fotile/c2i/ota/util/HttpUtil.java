@@ -70,7 +70,7 @@ public class HttpUtil {
      */
     public static int GetVersion(final Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences(NEW_STATE_SHARED,MODE_PRIVATE);
-        return sharedPreferences.getInt(NEW_STATE_NAME,-1);
+        return sharedPreferences.getInt(VERSION,-1);
     }
 
     /**设置flag**/
