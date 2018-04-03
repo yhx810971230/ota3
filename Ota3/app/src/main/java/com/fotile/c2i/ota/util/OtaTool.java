@@ -83,7 +83,7 @@ public class OtaTool {
     }
 
     public static void setTypeFace(Typeface t) {
-        if (null == thinBoldFace) {
+        if (null == thinBoldFace && t != null) {
             thinBoldFace = t;
 
         }

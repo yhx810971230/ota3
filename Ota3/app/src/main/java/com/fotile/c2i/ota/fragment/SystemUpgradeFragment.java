@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -329,7 +330,8 @@ public class SystemUpgradeFragment extends Fragment {
     }
 
     private void initView() {
-
+        showViewhandler = new Handler(Looper.getMainLooper());
+        checkhandler = new Handler(Looper.getMainLooper());
         layout_no_upgrade = (RelativeLayout) view.findViewById(R.id.layout_no_upgrade);
         layout_upgrading= (RelativeLayout) view.findViewById(R.id.layout_upgrading);
         lay_laoding= (RelativeLayout) view.findViewById(R.id.lay_laoding);
