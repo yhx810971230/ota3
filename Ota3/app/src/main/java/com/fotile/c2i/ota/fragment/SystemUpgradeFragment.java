@@ -330,8 +330,6 @@ public class SystemUpgradeFragment extends Fragment {
     }
 
     private void initView() {
-        showViewhandler = new Handler(Looper.getMainLooper());
-        checkhandler = new Handler(Looper.getMainLooper());
         layout_no_upgrade = (RelativeLayout) view.findViewById(R.id.layout_no_upgrade);
         layout_upgrading= (RelativeLayout) view.findViewById(R.id.layout_upgrading);
         lay_laoding= (RelativeLayout) view.findViewById(R.id.lay_laoding);
@@ -628,7 +626,7 @@ public class SystemUpgradeFragment extends Fragment {
      * 固件包升级信息回调
      * 进入该回调，mInfo有值了
      */
-    private Handler checkhandler = new Handler() {
+    private Handler checkhandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(android.os.Message msg) {
             OtaLog.LOGOta("升级界面","当前信息回调"+msg.what);
             //如果这里是false 说明已经有返回了  不需要继续处理
@@ -680,7 +678,7 @@ public class SystemUpgradeFragment extends Fragment {
      * 固件包升级信息回调
      * 进入该回调，mInfo有值了
      */
-    private Handler showViewhandler = new Handler() {
+    private Handler showViewhandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(android.os.Message msg) {
             if (msg.what == VIEW_DOWN_COMPLETE) {
                 showView(VIEW_DOWN_COMPLETE);
