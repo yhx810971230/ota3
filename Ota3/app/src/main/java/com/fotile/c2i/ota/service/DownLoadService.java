@@ -221,18 +221,15 @@ public class DownLoadService extends Service {
 
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
                             }else {
-                                if(is_ota_checking){//ota检测中 直接返回
-                                    return;
-                                }
-                                is_ota_checking = true;//ota 检测中
-                                ota_file_check_flag = checkOtamd5();
+
+
 
                                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                 long downloadtime = System.currentTimeMillis();
                                 final String nowtime = df.format(downloadtime) + "complete";
                                 OtaTool.writeDownloadInfo(nowtime+String.valueOf(ota_file_check_flag),String.valueOf(ota_file_check_flag));
                                 send_Fregment_change = true ;//这里设置为真，表面OTa 文件校验过 下次就不会进入
-                                is_ota_checking = false ; //设置ota检测中为false；
+
                                 OtaTool.RedTips = ota_file_check_flag ? 1:2 ;
                                 if (ota_file_check_flag) {
 
@@ -408,6 +405,12 @@ public class DownLoadService extends Service {
         @Override
         public void onComplete(FileInfo fileInfo) {
             last_progress = 100f;
+            if(is_ota_checking){//ota检测中 直接返回
+                return;
+            }
+            is_ota_checking = true;//ota 检测中
+            ota_file_check_flag = checkOtamd5();
+            is_ota_checking = false;
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
             uiHandler.sendMessage(msg);
