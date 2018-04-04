@@ -153,7 +153,7 @@ public class OtaUpgradeUtil {
             return toHexString(md5.digest());
         } catch (Exception e) {
             System.out.println("error");
-            return null;
+            return "error";//这里不返回null，防止出现空指针
         }
     }
 

@@ -68,7 +68,8 @@ public class OtaTool {
     private static String COMMENT = "comment";
     private static String MCU_MD5 = "mcu_md5";
     private static String OTA_MD5 = "ota_md5";
-
+    public static boolean ischeckmd5 = false;
+    public static int RedTips = 0;
     /**
      * 限制按钮的快速点击情况
      *
@@ -588,14 +589,8 @@ public class OtaTool {
         File file = new File(OtaConstant.FILE_NAME_OTA);
         if (file.exists()) {
             return true;
-//            String filemd5 = OtaUpgradeUtil.md5sum(file.getPath());
-//            if (filemd5.equals(getLastUpdateVersionMD5(context))) {
-//                return  true;
-//
-//            }else {
-//                return false;
-//            }
         }else {
+            OtaLog.LOGOta("文件不存在","系统升级文件不存在： ");
             return false;
         }
     }
@@ -617,13 +612,61 @@ public class OtaTool {
         OtaLog.LOGOta("小红点","是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
         return flag;
     }
+    /**
+     * 校验文件是否下载完成或者已经下载过了 新的方法，会校验md5
+     *
+     * @return
+     */
+    public static boolean checkFiles(final Context context,boolean flag) {
+        File file = new File(OtaConstant.FILE_NAME_OTA);
+        if (file.exists()) {
+            String filemd5 = OtaUpgradeUtil.md5sum(file.getPath());
+            String fileinfoMd5 =getLastUpdateVersionMD5(context);
+            OtaLog.LOGOta("文件md5","系统升级文件md5： "+filemd5+"保存的md5"+fileinfoMd5);
+            if (filemd5.equals(fileinfoMd5)) {
+                return  true;
+
+            }else {
+                file.delete();
+                return false;
+            }
+        }else {
+            OtaLog.LOGOta("文件不存在","系统升级文件不存在： ");
+            return false;
+        }
+    }
+    /**
+     *判断是否要显示小红点，逻辑，不需要进入设置界面。 新的方法，会校验md5 ，时间比较久。
+     * @writer panyw
+     * @param context
+     * @return
+     */
+    public static boolean showTips (final Context context,boolean flagofThead){
+        if(getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100"))){
+            File file = new File(OtaConstant.FILE_NAME_OTA);
+            if(file.exists()){
+                file.delete();
+            }
+        }
+        boolean flag = (!getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100")) && checkFiles(context,true));
+        OtaLog.LOGOta("小红点","是否显示小红点"+flag+"; 当前版本："+ OtaTool.getProperty("ro.cvte.customer.version", "100")+"；最新版本"+getLastUpdateVersion(context));
+        return flag;
+    }
     public static void checkDownloadTips(final Context context){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if(showTips(context)){
+                if (ischeckmd5){
+                    return;
+                }
+                ischeckmd5 = true;
+                if(showTips(context,true)){
+                    ischeckmd5 = false;
+                    RedTips = 1;
                     EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
                 }else {
+                    ischeckmd5 = false;
+                    RedTips = 2;
                     EventBus.getDefault().post(new DownloadEvent(OtaConstant.NO_DOWNLOAD,"未下载，或下载损坏"));
                 }
             }

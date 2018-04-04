@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.dl7.downloaderlib.entity.FileInfo;
 import com.dl7.downloaderlib.model.DownloadStatus;
 import com.fotile.c2i.ota.R;
+import com.fotile.c2i.ota.bean.DownloadEvent;
 import com.fotile.c2i.ota.bean.OtaFileInfo;
 import com.fotile.c2i.ota.bean.UpgradeInfo;
 import com.fotile.c2i.ota.service.DownLoadService;
@@ -32,6 +33,7 @@ import com.fotile.c2i.ota.view.OtaLoadingView;
 import com.fotile.c2i.ota.view.OtaTopSnackBar;
 import com.google.gson.Gson;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -439,7 +441,7 @@ public class SystemUpgradeFragment extends Fragment {
         //-----------------------------------listener-----------------------------------//
 
         //默认显示升级界面
-        OtaTool.showTips(getActivity());
+//        OtaTool.showTips(getActivity());
         OtaLog.LOGOta("升级界面","当前下载状态"+ DownLoadService.getDownLoadState());
 
         showView(VIEW_STATE_LOADING);
@@ -764,11 +766,15 @@ public class SystemUpgradeFragment extends Fragment {
         //这个是获取网络文件大小，应该让后台改，实在不行在这里改一下
         //mInfo.size = String.valueOf( OtaTool.getFileLength(mInfo.url));
         File file = new File(OtaConstant.FILE_NAME_OTA);
-        //网络断开且有本地文件
+        //有本地文件
         if (file.exists() && OtaTool.checkDownloadFileMd5(mInfo)){
             checkhandler.sendEmptyMessage(VIEW_DOWN_COMPLETE);
-
+            OtaTool.RedTips = 1;
+            EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
             return;
+        }else {
+            OtaTool.RedTips = 2;
+            EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"下载完成,但是失败了"));
         }
         checkhandler.sendEmptyMessage(NEW_INVALID_PACKAGE);
     }

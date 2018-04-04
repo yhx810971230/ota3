@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
@@ -161,7 +162,7 @@ public class DownLoadService extends Service {
         state = DownloadStatus.NORMAL;
     }
 
-    private Handler uiHandler = new Handler() {
+    private Handler uiHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -232,6 +233,7 @@ public class DownLoadService extends Service {
                                 OtaTool.writeDownloadInfo(nowtime+String.valueOf(ota_file_check_flag),String.valueOf(ota_file_check_flag));
                                 send_Fregment_change = true ;//这里设置为真，表面OTa 文件校验过 下次就不会进入
                                 is_ota_checking = false ; //设置ota检测中为false；
+                                OtaTool.RedTips = ota_file_check_flag ? 1:2 ;
                                 if (ota_file_check_flag) {
 
                                     //如果页面离开设置界面
