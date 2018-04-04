@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.fotile.c2i.ota.service.TimeService;
-
 /**
  * Created by panyw on 2018/1/23.
  */
@@ -13,7 +11,7 @@ import com.fotile.c2i.ota.service.TimeService;
 public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Intent i = new Intent(context, TimeService.class);
-        context.startService(i);
+//        Intent i = new Intent(context, TimeService.class);
+//        context.startService(i);
     }
 }
