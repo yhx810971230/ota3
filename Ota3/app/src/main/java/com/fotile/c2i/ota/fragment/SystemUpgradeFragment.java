@@ -773,6 +773,7 @@ public class SystemUpgradeFragment extends Fragment {
             EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
             return;
         }else {
+            file.delete();
             OtaTool.RedTips = 2;
             EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"下载完成,但是失败了"));
         }

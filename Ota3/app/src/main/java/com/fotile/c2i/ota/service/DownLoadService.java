@@ -243,6 +243,7 @@ public class DownLoadService extends Service {
                                         OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
                                                 .LENGTH_LONG).show();
                                     }
+                                    OtaTool.RedTips =1;
                                     EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
 
 
@@ -256,6 +257,7 @@ public class DownLoadService extends Service {
                                         OtaTopSnackBar.make(DownLoadService.this, "固件下载中已损坏，请重新下载", OtaTopSnackBar
                                                 .LENGTH_LONG).show();
                                     }
+                                    OtaTool.RedTips = 2;
                                     EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"下载完成,但是文件损坏了"));
                                 }
                                 DownloadAction.getInstance().reciverData(otaFileInfo);
