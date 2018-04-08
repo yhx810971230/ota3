@@ -13,7 +13,7 @@ public class InfoBean
     private String recipes_url;
     private int version_code;
     public InfoBean(){
-        this.ota_state = false;
+        this.ota_state = true;
         this.recipes_url = "";
         this.version_code = -1;
     }
