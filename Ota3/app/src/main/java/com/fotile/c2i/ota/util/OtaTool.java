@@ -1,5 +1,6 @@
 package com.fotile.c2i.ota.util;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -170,6 +171,9 @@ public class OtaTool {
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context
                 .CONNECTIVITY_SERVICE);
+        if(mConnectivityManager == null){
+            return false;
+        }
         NetworkInfo netInfo = mConnectivityManager.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isAvailable()) {
             return true;
@@ -493,9 +497,10 @@ public class OtaTool {
 
     }
     /**  获取wifi状态*/
+    @SuppressLint("WrongConstant")
     public static int getWifiState(final Context context){
         int wifiState = -1;
-        WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         if(wifiManager != null){
 
@@ -506,6 +511,9 @@ public class OtaTool {
     }
     public static String getConnectWifiSsid(final Context context){
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if(wifiManager == null){
+            return "";
+        }
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         OtaLog.LOGOta("wifiInfo", wifiInfo.toString());
         OtaLog.LOGOta("SSID","设置wifi ssid:"+wifiInfo.getSSID());
@@ -638,8 +646,8 @@ public class OtaTool {
     /**
      *判断是否要显示小红点，逻辑，不需要进入设置界面。 新的方法，会校验md5 ，时间比较久。
      * @writer panyw
-     * @param context
-     * @return
+     * @param context 上下文
+     * @return 是否显示小红点
      */
     public static boolean showTips (final Context context,boolean flagofThead){
         if(getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100"))){
