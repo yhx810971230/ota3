@@ -115,19 +115,19 @@ public class OtaUpgradeUtil {
     public static String Decrypt(String src, String password) throws Exception {
         byte[] ss = Base64.decode(src, Base64.DEFAULT);
 
-        /** DES算法要求有一个可信任的随机数源 */
+        /* DES算法要求有一个可信任的随机数源 */
         SecureRandom random = new SecureRandom();
-        /** 创建一个DESKeySpec对象 */
+        /* 创建一个DESKeySpec对象 */
         DESKeySpec desKey = new DESKeySpec(password.getBytes());
-        /** 创建一个密匙工厂 */
+        /* 创建一个密匙工厂 */
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
-        /** 将DESKeySpec对象转换成SecretKey对象 */
+        /* 将DESKeySpec对象转换成SecretKey对象 */
         SecretKey securekey = keyFactory.generateSecret(desKey);
-        /** Cipher对象实际完成解密操作 */
+        /* Cipher对象实际完成解密操作 */
         Cipher cipher = Cipher.getInstance("DES");
-        /** 用密匙初始化Cipher对象 */
+        /* 用密匙初始化Cipher对象 */
         cipher.init(Cipher.DECRYPT_MODE, securekey, random);
-        /** 真正开始解密操作 */
+        /* 真正开始解密操作 */
         byte[] dec = cipher.doFinal(ss);
         return new String(dec, "UTF-8");
     }
@@ -135,8 +135,8 @@ public class OtaUpgradeUtil {
     /**
      * 生成文件的md5用于校验
      *
-     * @param filename
-     * @return
+     * @param filename 文件名称
+     * @return 文件md5
      */
     public static String md5sum(String filename) {
         InputStream fis;
@@ -160,8 +160,8 @@ public class OtaUpgradeUtil {
     /**
      * 十六进制转换
      *
-     * @param b
-     * @return
+     * @param b 数字流
+     * @return 转换成的16进制
      */
     public static String toHexString(byte[] b) {
         StringBuilder sb = new StringBuilder(b.length * 2);

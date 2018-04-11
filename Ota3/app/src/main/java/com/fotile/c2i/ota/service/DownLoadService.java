@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
  * 文件作者：yaohx
  * 功能描述：下载服务
  */
+
 public class DownLoadService extends Service {
     /**
      * 固件包的保存目录
@@ -167,7 +168,9 @@ public class DownLoadService extends Service {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             OtaFileInfo otaFileInfo = (OtaFileInfo) msg.obj;
+
             if (null != otaFileInfo && null != otaFileInfo.fileInfo) {
+                OtaLog.LOGOta("UIhandler更新",otaFileInfo.fileInfo.getStatus());
                 String current_act_name = OtaTool.getCurrentActivityName(DownLoadService.this);
                 state = otaFileInfo.fileInfo.getStatus();
                 switch (state) {
@@ -251,7 +254,7 @@ public class DownLoadService extends Service {
                                     otaFileInfo.errorMsg = OtaConstant.MD5_CHECK_ERROR;
                                     if (!show_complete_tip) {
                                         show_complete_tip = true;
-                                        OtaTopSnackBar.make(DownLoadService.this, "固件下载中已损坏，请重新下载", OtaTopSnackBar
+                                        OtaTopSnackBar.make(DownLoadService.this, "下载失败，请重新下载", OtaTopSnackBar
                                                 .LENGTH_LONG).show();
                                     }
                                     OtaTool.RedTips = 2;
@@ -277,7 +280,7 @@ public class DownLoadService extends Service {
                                 OtaLog.LOGOta("下载完成", " mcu包md5校验失败");
                                 if (!show_complete_tip) {
                                     show_complete_tip = true;
-                                    OtaTopSnackBar.make(DownLoadService.this, "电源固件下载中已损坏，请重新下载", OtaTopSnackBar
+                                    OtaTopSnackBar.make(DownLoadService.this, "下载失败，请重新下载", OtaTopSnackBar
                                             .LENGTH_LONG).show();
                                 }
                             }
@@ -314,7 +317,7 @@ public class DownLoadService extends Service {
     /**
      * 校验ota的md5
      *
-     * @return
+     * @return ota 是否校验成功
      */
     private boolean checkOtamd5() {
         //ota md5校验，防止断点下载出错
@@ -323,7 +326,7 @@ public class DownLoadService extends Service {
         File file_ota = new File(file_name_ota);
         OtaLog.LOGOta("md5校验","当前的"+md5 + "文件的是否存在:"+file_ota.exists());
         if (file_ota.exists()) {
-            String str_md5_ota = new OtaUpgradeUtil().md5sum(file_ota.getPath());
+            String str_md5_ota =  OtaUpgradeUtil.md5sum(file_ota.getPath());
             OtaLog.LOGOta("md5校验","当前的"+md5 + "文件的md5:"+str_md5_ota);
             if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(md5)) {
                 check_md5_ota = true;
@@ -337,7 +340,6 @@ public class DownLoadService extends Service {
     private boolean checkOtafile() {
         //ota md5校验，防止断点下载出错
 
-        boolean file_exists = false;
         File file_ota = new File(file_name_ota);
         return  file_ota.exists();
     }
@@ -345,14 +347,14 @@ public class DownLoadService extends Service {
     /**
      * 校验mcu的md5
      *
-     * @return
+     * @return 电源板ota是否校验成功
      */
     private boolean checkMcumd5() {
         //mcu md5校验，防止断点下载出错
         boolean check_md5_mcu = false;
         File file_mcu = new File(file_name_mcu);
         if (file_mcu.exists()) {
-            String str_md5_mcu = new OtaUpgradeUtil().md5sum(file_mcu.getPath());
+            String str_md5_mcu = OtaUpgradeUtil.md5sum(file_mcu.getPath());
             if (!TextUtils.isEmpty(str_md5_mcu) && str_md5_mcu.equals(ex_md5)) {
                 check_md5_mcu = true;
                 OtaLog.LOGOta("mcu包md5校验成功", "true");
@@ -430,7 +432,7 @@ public class DownLoadService extends Service {
             Message msg = uiHandler.obtainMessage();
             msg.obj = new OtaFileInfo(fileInfo, "");
             //这里需要延时1秒
-            /**
+            /*
              * 网络断开的时候不会立马检测到，所以要延迟
              */
             uiHandler.sendMessageDelayed(msg,1000);
