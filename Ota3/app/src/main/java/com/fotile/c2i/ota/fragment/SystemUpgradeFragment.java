@@ -170,6 +170,11 @@ public class SystemUpgradeFragment extends Fragment {
      */
     private static  int GET_INFO_TIMEOUT = 9;
     /**
+     * 显示titleBar
+     *
+     */
+    private static int SHOW_TOPBAR = 99;
+    /**
      * 是否正在获取固件信息
      */
     private boolean is_loading_version_data;
@@ -504,7 +509,7 @@ public class SystemUpgradeFragment extends Fragment {
             getParams();
         } else {
             showViewhandler.sendEmptyMessage(VIEW_STATE_NO_DATA);
-            OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
+            showViewhandler.sendEmptyMessage(SHOW_TOPBAR);
         }
     }
 
@@ -691,6 +696,8 @@ public class SystemUpgradeFragment extends Fragment {
                 showView(VIEW_STATE_LOADING);
             } else if (msg.what == VIEW_STATE_NO_DATA) {
                 showView(VIEW_STATE_NO_DATA);
+            }else if(msg.what == SHOW_TOPBAR){
+                OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
             }
         }
 
