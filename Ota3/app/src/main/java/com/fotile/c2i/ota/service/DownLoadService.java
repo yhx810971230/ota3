@@ -233,7 +233,7 @@ public class DownLoadService extends Service {
                                 OtaTool.writeDownloadInfo(nowtime+String.valueOf(ota_file_check_flag),String.valueOf(ota_file_check_flag));
                                 send_Fregment_change = true ;//这里设置为真，表面OTa 文件校验过 下次就不会进入
 
-                                OtaTool.RedTips = ota_file_check_flag ? 1:2 ;
+
                                 if (ota_file_check_flag) {
 
                                     //如果页面离开设置界面

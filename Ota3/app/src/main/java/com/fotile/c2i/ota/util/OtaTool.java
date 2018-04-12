@@ -104,14 +104,14 @@ public class OtaTool {
         if (null == mInfo) {
             return false;
         }
-        OtaUpgradeUtil otaUpgradeUtil = new OtaUpgradeUtil();
+
 
         //判断ota文件是否完整下载过了
         boolean file_exist_ota = false;
         File file_ota = new File(OtaConstant.FILE_NAME_OTA);
         if (file_ota.exists()) {
             //本地文件md5
-            String str_md5_ota = otaUpgradeUtil.md5sum(file_ota.getPath());
+            String str_md5_ota = OtaUpgradeUtil.md5sum(file_ota.getPath());
             if (!TextUtils.isEmpty(str_md5_ota) && str_md5_ota.equals(mInfo.md5)) {
                 file_exist_ota = true;
             }
@@ -121,7 +121,7 @@ public class OtaTool {
         File file_mcu = new File(OtaConstant.FILE_NAME_MCU);
         if (file_mcu.exists()) {
             //本地md5
-            String str_md5_mcu = otaUpgradeUtil.md5sum(file_mcu.getPath());
+            String str_md5_mcu = OtaUpgradeUtil.md5sum(file_mcu.getPath());
             if (!TextUtils.isEmpty(str_md5_mcu) && str_md5_mcu.equals(mInfo.ex_md5)) {
                 file_exist_mcu = true;
             }
@@ -651,6 +651,7 @@ public class OtaTool {
      */
     public static boolean showTips (final Context context,boolean flagofThead){
         if(getLastUpdateVersion(context).equals( OtaTool.getProperty("ro.cvte.customer.version", "100"))){
+            OtaLog.LOGOta("小红点","版本相同 ，升级成功，删除文件");
             File file = new File(OtaConstant.FILE_NAME_OTA);
             if(file.exists()){
                 file.delete();
@@ -680,7 +681,9 @@ public class OtaTool {
             }
         }).start();
     }
-
+    public static void ResetRedTips(){
+        RedTips = 0;
+    }
     /**
      * 计算目标路径的磁盘使用情况
      *
