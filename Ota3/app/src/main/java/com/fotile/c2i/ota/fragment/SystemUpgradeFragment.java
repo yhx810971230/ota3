@@ -176,6 +176,7 @@ public class SystemUpgradeFragment extends Fragment {
     private int last_view_munber = -1;
     private Timer timer_net;
 
+
     public SystemUpgradeFragment(String packageName, Typeface typeface, OtaListener otaListener) {
         check_package_name = packageName;
         this.otaListener = otaListener;
@@ -742,6 +743,8 @@ public class SystemUpgradeFragment extends Fragment {
             checkhandler.removeMessages(GET_INFO_TIMEOUT);
             if (content == null || content.equals("{}")) {
                 checkhandler.sendEmptyMessage(NO_INVALID_PACKAGE);
+                OtaTool.RedTips = 0;
+                EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"没有新版本"));
                 return;
             }
             JSONObject jo = new JSONObject(content);
