@@ -364,7 +364,7 @@ public class OtaTool {
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
                         OtaLog.LOGOta("本地文件已经存在","本地存在ota文件");
-                        String filemd5 = ""+otaUpgradeUtil.md5sum(file.getPath());
+                        String filemd5 = ""+OtaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
                             return;
@@ -433,8 +433,8 @@ public class OtaTool {
                     if (file222.exists()) {
                         outputinfo += "本地数据文件存在：    \n";
                         OtaLog.LOGOta("本地文件已经存在","本地存在ota文件");
-                        String filemd5 = ""+ otaUpgradeUtil.md5sum(file.getPath());
-                        if (filemd5.equals(mInfo.md5)) {
+                        String filemd5 = ""+ OtaUpgradeUtil.md5sum(file.getPath());
+                        if (mInfo!=null && filemd5.equals(mInfo.md5)) {
                             outputinfo += "本地数据文件匹配:(不会下载    \n";
                         }else {
                             outputinfo += "本地数据文件不匹配:（会下载    \n";
@@ -456,7 +456,7 @@ public class OtaTool {
                     File file = new File(OtaConstant.FILE_NAME_OTA);
                     if (file.exists()) {
                         OtaLog.LOGOta("本地文件已经存在"," 本地存在ota文件");
-                        String filemd5 =""+ otaUpgradeUtil.md5sum(file.getPath());
+                        String filemd5 =""+ OtaUpgradeUtil.md5sum(file.getPath());
                         if (filemd5.equals(mInfo.md5)) {
                             md5_like = true;
                             return;
