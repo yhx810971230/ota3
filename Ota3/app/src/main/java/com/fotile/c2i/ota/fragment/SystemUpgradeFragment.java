@@ -294,7 +294,7 @@ public class SystemUpgradeFragment extends Fragment {
         layout_upgrading.setVisibility(View.GONE);
         lay_laoding.setVisibility(View.GONE);
         layout_error.setVisibility(View.GONE);
-        layout_error_connect.setVisibility(View.GONE);;
+        layout_error_connect.setVisibility(View.GONE);
         layout_main_completed.setVisibility(View.GONE);
         img_loading.stopRotationAnimation();
         if(type == VIEW_STATE_LOADING){
@@ -463,6 +463,7 @@ public class SystemUpgradeFragment extends Fragment {
                 startInitLogic();
             }
         }).start();
+
     }
 
     private void startInitLogic() {
@@ -477,7 +478,7 @@ public class SystemUpgradeFragment extends Fragment {
         //网络断开且有本地文件
         if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
             OtaLog.LOGOta("升级界面"," 开始校验md5");
-            if( otaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
+            if( OtaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
                 OtaLog.LOGOta("升级界面"," 校验md5 完成 成功");
                 if(mInfo == null){
                     mInfo = new UpgradeInfo();
