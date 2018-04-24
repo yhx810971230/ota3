@@ -391,7 +391,15 @@ public class DownLoadService extends Service {
                 uiHandler.sendMessage(msg);
                 last_progress = progress;
             }else {
-                OtaLog.LOGOta("InstallAc", "ListenerWrapper = 下载中--->" + progress);
+                String  current_act_name = OtaTool.getCurrentActivityName(DownLoadService.this);
+                OtaLog.LOGOta("InstallAc", "ListenerWrapper = 下载中--->" + progress+ "   当前类名"+current_act_name+"当前flag"+show_downing_tip);
+                if (!current_act_name.contains("SettingActivity") && !show_downing_tip) {
+                    Message msg = uiHandler.obtainMessage();
+                    msg.obj = new OtaFileInfo(fileInfo, "");
+                    uiHandler.sendMessage(msg);
+                    last_progress = progress;
+                }
+
             }
 
         }

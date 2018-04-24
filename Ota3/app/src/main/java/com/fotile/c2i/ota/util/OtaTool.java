@@ -547,7 +547,8 @@ public class OtaTool {
     }
     /**设置最新版本**/
     public static void setLastUpdateVersion(final Context context,String isdown){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(ISDOWM,isdown);
         editor.apply();
@@ -555,27 +556,47 @@ public class OtaTool {
     }
     /**获取最新版本**/
     public static String getLastUpdateVersion(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "";
+        }
         return sharedPreferences.getString(VERSION,"");
     }
     /**获取最新版本名称**/
     public static String getLastUpdateVersionName(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "";
+        }
         return sharedPreferences.getString(VERSION_NAME,"");
     }
     /**获取是否下载**/
     public static String getLastUpdateState(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "no";
+        }
         return sharedPreferences.getString(ISDOWM,"no");
     }
     /**获取最新版本的MD5**/
     public static String getLastUpdateVersionMD5(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "";
+        }
         return sharedPreferences.getString(OTA_MD5,"");
     }
     /**获取最新版本的更新内容**/
     public static String getLastUpdateVersionComment(final Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "";
+        }
         return sharedPreferences.getString(COMMENT,"");
     }
     public static void delectFile(){
