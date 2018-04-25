@@ -69,6 +69,7 @@ public class OtaTool {
     private static String COMMENT = "comment";
     private static String MCU_MD5 = "mcu_md5";
     private static String OTA_MD5 = "ota_md5";
+    private static String NOW_VERSION = "now_version";
     public static boolean ischeckmd5 = false;
     public static int RedTips = 0;
     /**
@@ -554,8 +555,19 @@ public class OtaTool {
         editor.apply();
         editor.commit();
     }
+    /**设置最新版本**/
+    public static void setNowVersion(final Context context,String now_version){
+        if (context == null)return;
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(NOW_VERSION,now_version);
+        editor.apply();
+        editor.commit();
+    }
     /**获取最新版本**/
     public static String getLastUpdateVersion(final Context context){
+        if (context == null)return "";
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
@@ -565,6 +577,7 @@ public class OtaTool {
     }
     /**获取最新版本名称**/
     public static String getLastUpdateVersionName(final Context context){
+        if (context == null)return "";
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
@@ -574,6 +587,7 @@ public class OtaTool {
     }
     /**获取是否下载**/
     public static String getLastUpdateState(final Context context){
+        if (context == null)return "no";
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
@@ -583,6 +597,7 @@ public class OtaTool {
     }
     /**获取最新版本的MD5**/
     public static String getLastUpdateVersionMD5(final Context context){
+        if (context == null)return "";
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
@@ -592,12 +607,23 @@ public class OtaTool {
     }
     /**获取最新版本的更新内容**/
     public static String getLastUpdateVersionComment(final Context context){
+        if (context == null)return "";
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
             return "";
         }
         return sharedPreferences.getString(COMMENT,"");
+    }
+    /**获取更新前的版本**/
+    public static String getNowVersion(final Context context){
+        if (context == null)return "";
+        Context context1 = context.getApplicationContext();
+        SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
+        if(sharedPreferences == null){
+            return "";
+        }
+        return sharedPreferences.getString(NOW_VERSION,"");
     }
     public static void delectFile(){
         File file = new File(OtaConstant.FILE_NAME_OTA);

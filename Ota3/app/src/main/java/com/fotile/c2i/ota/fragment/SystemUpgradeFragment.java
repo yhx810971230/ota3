@@ -410,6 +410,7 @@ public class SystemUpgradeFragment extends Fragment {
         btn_upgrade_now.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                OtaTool.setNowVersion(getActivity(), OtaTool.getProperty("ro.cvte.customer.version", "unknow"));
                 //如果设备没有工作中，才执行ota
                 if (null != otaListener && null != mInfo) {
                     if (OtaTool.fastclick()) {
@@ -759,6 +760,7 @@ public class SystemUpgradeFragment extends Fragment {
             if (content == null || content.equals("{}")) {
                 checkhandler.sendEmptyMessage(NO_INVALID_PACKAGE);
                 OtaTool.RedTips = 0;
+                OtaTool.delectFile();
                 EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE_ERROR,"没有新版本"));
                 return;
             }
