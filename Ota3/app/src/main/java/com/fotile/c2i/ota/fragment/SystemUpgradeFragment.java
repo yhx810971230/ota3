@@ -1,6 +1,7 @@
 package com.fotile.c2i.ota.fragment;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.wifi.WifiManager;
@@ -468,23 +469,29 @@ public class SystemUpgradeFragment extends Fragment {
 
     private void startInitLogic() {
         //显示加载动画--如果网络畅通，获取升级包信息
+        Context mcontext = getActivity();
+        if(mcontext == null )return;
         OtaLog.LOGOta("升级界面","获取网络状态");
         try {
-            OtaLog.LOGOta("升级界面"," 获取网络状态"+ OtaTool.getWifiState(getActivity()));
+            OtaLog.LOGOta("升级界面"," 获取网络状态"+ OtaTool.getWifiState(mcontext));
         }catch (Exception e){
 
         }
         File file = new File(OtaConstant.FILE_NAME_OTA);
         //网络断开且有本地文件
-        if (file.exists() && !OtaTool.isNetworkAvailable(getActivity())){
+        if (file.exists() && !OtaTool.isNetworkAvailable(mcontext)){
             OtaLog.LOGOta("升级界面"," 开始校验md5");
-            if( OtaUpgradeUtil.md5sum(file.getPath()).equals(OtaTool.getLastUpdateVersionMD5(getActivity()))){
+
+            String lastMd5 = OtaTool.getLastUpdateVersionMD5(mcontext);
+            String lastname =OtaTool.getLastUpdateVersionName(mcontext);
+            String lastversionCommnet = OtaTool.getLastUpdateVersionComment(mcontext);
+            if( OtaUpgradeUtil.md5sum(file.getPath()).equals(lastMd5)){
                 OtaLog.LOGOta("升级界面"," 校验md5 完成 成功");
                 if(mInfo == null){
                     mInfo = new UpgradeInfo();
                 }
-                mInfo.name = OtaTool.getLastUpdateVersionName(getActivity());
-                mInfo.comment = OtaTool.getLastUpdateVersionComment(getActivity());
+                mInfo.name = lastname;
+                mInfo.comment = lastversionCommnet;
                 File file1 = new File(OtaConstant.FILE_NAME_MCU);
                 if (file1.exists()){
                     mInfo.ex_url = "存在url";
@@ -497,14 +504,14 @@ public class SystemUpgradeFragment extends Fragment {
             OtaLog.LOGOta("升级界面"," 校验md5 完成 失败");
         }
         //网络断开
-        if(OtaTool.getWifiState(getActivity()) == WifiManager.WIFI_STATE_DISABLED || TextUtils.isEmpty(OtaTool.getConnectWifiSsid(getActivity())) ){
+        if(OtaTool.getWifiState( mcontext) == WifiManager.WIFI_STATE_DISABLED || TextUtils.isEmpty(OtaTool.getConnectWifiSsid(mcontext)) ){
             showViewhandler.sendEmptyMessage(VIEW_WIFI_NO_OPEN);
             return;
         }
 
 
         //网络可用
-        if (OtaTool.isNetworkAvailable(getActivity())) {
+        if (OtaTool.isNetworkAvailable(mcontext)) {
             is_loading_version_data = true;
             showViewhandler.sendEmptyMessage(VIEW_STATE_LOADING);
             getParams();
