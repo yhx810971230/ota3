@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="100px"
         android:gravity="center"
-        android:background="@drawable/shape_6_null_gray"
+        android:background="@mipmap/topbar_bg"
         android:paddingLeft="18px"
         android:paddingRight="18px"
         android:orientation="horizontal">
