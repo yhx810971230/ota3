@@ -651,6 +651,21 @@ public class OtaTool {
     }
 
     /**
+     * 校验文件MCU文件是否下载过
+     *
+     * @return
+     */
+    public static boolean checkMCUFiles(final Context context) {
+        File file = new File(OtaConstant.FILE_NAME_MCU);
+        if (file.exists()) {
+            return true;
+        }else {
+            OtaLog.LOGOta("文件不存在","系统升级文件不存在： ");
+            return false;
+        }
+    }
+
+    /**
      *判断是否要显示小红点，逻辑，不需要进入设置界面。
      * @writer panyw
      * @param context

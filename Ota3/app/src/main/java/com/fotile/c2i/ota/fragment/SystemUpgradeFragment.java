@@ -414,7 +414,8 @@ public class SystemUpgradeFragment extends Fragment {
                 //如果设备没有工作中，才执行ota
                 if (null != otaListener && null != mInfo) {
                     if (OtaTool.fastclick()) {
-                        boolean contain_mcu = TextUtils.isEmpty(mInfo.ex_url) ? false : true;
+
+                        boolean contain_mcu = !TextUtils.isEmpty(mInfo.ex_url) && OtaTool.checkMCUFiles(getActivity());
                         otaListener.onInstallNow(contain_mcu);
                     }
                 }
@@ -426,7 +427,7 @@ public class SystemUpgradeFragment extends Fragment {
             public void onClick(View view) {
                 if (null != otaListener && null != mInfo) {
                     if (OtaTool.fastclick()) {
-                        boolean contain_mcu = TextUtils.isEmpty(mInfo.ex_url) ? false : true;
+                        boolean contain_mcu = !TextUtils.isEmpty(mInfo.ex_url) && OtaTool.checkMCUFiles(getActivity());
                         otaListener.onInstallLater(contain_mcu);
                     }
                 }
