@@ -44,6 +44,18 @@ public class HttpUtil {
 
     }
 
+    /**获取是否Debag**/
+    public static boolean isDeBag(final Context context){
+        InfoBean infoBean =HttpUtil.getStateFromFile();
+        return infoBean.isIs_debug();
+
+    }
+    /**获取是否Debag**/
+    public static boolean isDeBag(){
+        InfoBean infoBean =HttpUtil.getStateFromFile();
+        return infoBean.isIs_debug();
+
+    }
     public static boolean setStateToFile(boolean ota_flag,String recipes_url,int version_code){
         File file = new File(FILE_STATE_DIR);
         if(!file.exists()){
@@ -73,6 +85,130 @@ public class HttpUtil {
             osw = new OutputStreamWriter(fos,"utf-8");
             InfoBean infoBean = new InfoBean(ota_flag,recipes_url,version_code);
 
+            String fileString = new Gson().toJson(infoBean,InfoBean.class);
+            //写数据
+            osw.write(fileString);
+            osw.flush();
+            fos.flush();
+            //关闭文件流
+            osw.close();
+            fos.close();
+            OtaLog.LOGOta("===当前文件状态","写入成功======");
+            getStateFromFile();
+            return true;
+        } catch (Exception e) {
+            OtaLog.LOGOta("===当前文件状态","失败1111");
+            e.printStackTrace();
+            OtaLog.LOGOta("===当前文件状态","失败1111222");
+            return false;
+        }finally {
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(osw != null){
+                try {
+                    osw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public static boolean setStateToFile(InfoBean infoBean){
+        File file = new File(FILE_STATE_DIR);
+        if(!file.exists()){
+            OtaLog.LOGOta("===当前文件状态","创建文件夹");
+            file.mkdirs();
+        }else {
+            OtaLog.LOGOta("===当前文件状态","文件夹已经存在");
+        }
+        File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
+        if(!file1.exists()){
+
+            try {
+                OtaLog.LOGOta("===当前文件状态","创建文件"+file1);
+                file1.createNewFile();
+            } catch (IOException e) {
+                OtaLog.LOGOta("===当前文件状态","创建文件失败"+file1);
+                e.printStackTrace();
+            }
+        } else {
+            OtaLog.LOGOta("===当前文件状态","文件已经存在"+file1);
+        }
+        FileOutputStream fos = null;
+        OutputStreamWriter osw = null;
+        try {
+            //文件输出流
+            fos = new FileOutputStream(file1);
+            osw = new OutputStreamWriter(fos,"utf-8");
+
+            String fileString = new Gson().toJson(infoBean,InfoBean.class);
+            //写数据
+            osw.write(fileString);
+            osw.flush();
+            fos.flush();
+            //关闭文件流
+            osw.close();
+            fos.close();
+            OtaLog.LOGOta("===当前文件状态","写入成功======");
+            getStateFromFile();
+            return true;
+        } catch (Exception e) {
+            OtaLog.LOGOta("===当前文件状态","失败1111");
+            e.printStackTrace();
+            OtaLog.LOGOta("===当前文件状态","失败1111222");
+            return false;
+        }finally {
+            if(fos != null){
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(osw != null){
+                try {
+                    osw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static boolean setStateToFile(boolean isDebag){
+        InfoBean infoBean = getStateFromFile();
+        File file = new File(FILE_STATE_DIR);
+        if(!file.exists()){
+            OtaLog.LOGOta("===当前文件状态","创建文件夹");
+            file.mkdirs();
+        }else {
+            OtaLog.LOGOta("===当前文件状态","文件夹已经存在");
+        }
+        File file1 = new File(FILE_STATE_DIR+FILE_STATE_NAME);
+        if(!file1.exists()){
+
+            try {
+                OtaLog.LOGOta("===当前文件状态","创建文件"+file1);
+                file1.createNewFile();
+            } catch (IOException e) {
+                OtaLog.LOGOta("===当前文件状态","创建文件失败"+file1);
+                e.printStackTrace();
+            }
+        } else {
+            OtaLog.LOGOta("===当前文件状态","文件已经存在"+file1);
+        }
+        FileOutputStream fos = null;
+        OutputStreamWriter osw = null;
+        try {
+            //文件输出流
+            fos = new FileOutputStream(file1);
+            osw = new OutputStreamWriter(fos,"utf-8");
+            infoBean.setIs_debug(isDebag);
             String fileString = new Gson().toJson(infoBean,InfoBean.class);
             //写数据
             osw.write(fileString);

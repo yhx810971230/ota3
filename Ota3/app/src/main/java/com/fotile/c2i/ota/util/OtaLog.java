@@ -11,7 +11,7 @@ import com.dl7.downloaderlib.model.DownloadStatus;
  * 功能描述：项目全局打印日志
  */
 public class OtaLog {
-    private static boolean isDebug = true;
+    private static boolean isDebug = HttpUtil.isDeBag();
 
     public static void LOGOta(String tag, Object obj) {
         if (isDebug) {

@@ -12,17 +12,24 @@ public class InfoBean
     private boolean ota_state;
     private String recipes_url;
     private int version_code;
+    private boolean is_debug = false;
     public InfoBean(){
         this.ota_state = true;
         this.recipes_url = "";
         this.version_code = -1;
+        this.is_debug = false;
     }
     public InfoBean(boolean ota_state ,String recipes_url,int version_code){
         this.ota_state = ota_state;
         this.recipes_url = recipes_url;
         this.version_code = version_code;
     }
-
+    public InfoBean(boolean ota_state ,String recipes_url,int version_code,boolean is_debug){
+        this.ota_state = ota_state;
+        this.recipes_url = recipes_url;
+        this.version_code = version_code;
+        this.is_debug = is_debug;
+    }
     public boolean isOta_state() {
         return ota_state;
     }
@@ -45,5 +52,13 @@ public class InfoBean
 
     public void setVersion_code(int version_code) {
         this.version_code = version_code;
+    }
+
+    public boolean isIs_debug() {
+        return is_debug;
+    }
+
+    public void setIs_debug(boolean is_debug) {
+        this.is_debug = is_debug;
     }
 }
