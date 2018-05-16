@@ -58,7 +58,7 @@ public class OtaTool {
     private static Typeface thinBoldFace;
 
     private static long last_time = 0;
-
+    private static long ONEDAYMISS = 1000*60*60*24;//一天的毫秒数
     /**最多的分散时间*/
     private static int MAX_TIME_RANDOM = 7200*1000;
 
@@ -243,25 +243,32 @@ public class OtaTool {
                 long time_bettwen = time_end - time_start;
                 OtaLog.LOGOta("后台下载时间校验起点", time_str_start + "--" + time_start);
                 OtaLog.LOGOta("后台下载时间校验终点", time_str_end + "--" + time_end);
-                OtaLog.LOGOta("后台下载时间差值",  "--" + time_bettwen);
                 OtaLog.LOGOta("后台下载时间当前时间点", current_time);
                 OtaLog.LOGOta("计时器状态", "计时器状态"+(timer_download != null));
                 //如果当前时间点在这两点之间
-                if (current_time > time_start && current_time < time_end) {
+
                     //如果不存在定时器
                     if (null == timer_download) {
                         OtaLog.LOGOta("开启后台下载线程", "开启后台下载线程");
                         //获取一个随机数，随机数之后开启线程
-
+                        long dely_download_time = 0;
                         long random_count = (long) OtaTool.randomByMac(7200*1000);
                         if(random_count == 0){
                             random_count = (long)(Math.random() * 3600 * 1000 * 2);
                         }
-                        timer_download = new Timer();
-                        timer_download.schedule(new TimerTask() {
+                        if (current_time > time_end+random_count) { //超过凌晨2点+ 一个随机 说明下次启动是明天凌晨两点
+                            long next_download_time = time_end+random_count+ONEDAYMISS;
+                            dely_download_time = next_download_time - current_time;
+
+                        }else {// 凌晨的时候
+                            dely_download_time = time_end+random_count;
+                        }
+                        OtaLog.LOGOta("新建计时器", "延迟时间："+dely_download_time+"; 共："+dely_download_time/3600000+"小时"+dely_download_time%3600000/60000+"分钟"+dely_download_time%60000/1000+"秒");
+                        timer_download = new Timer("auto_download",true);//启动定时器， 设置定时器线程名字，，，， 线程守护线程。
+                        timer_download.scheduleAtFixedRate(new TimerTask() {
                             @Override
                             public void run() {
-                                //十分钟后开始下载
+
                                 if(OtaConstant.TEST_PRINT_FILE){
                                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                     long downloadtime = System.currentTimeMillis();
@@ -270,12 +277,13 @@ public class OtaTool {
                                 }else {
                                     startDownload(check_package_name, context);
                                 }
-
-                                timer_download = null;
                             }
-                        }, random_count+time_bettwen);
+                        }, dely_download_time,ONEDAYMISS);
+                     }else {//有定时器在运行
+                        //
+
+                        OtaLog.LOGOta("计时器状态", "定时器正在运行中..........................");
                     }
-                }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
