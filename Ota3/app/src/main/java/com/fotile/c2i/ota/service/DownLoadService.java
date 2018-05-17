@@ -237,7 +237,7 @@ public class DownLoadService extends Service {
                                 if (ota_file_check_flag) {
 
                                     //如果页面离开设置界面
-                                    OtaTool.setLastUpdateVersion(getApplicationContext(),"yes");
+
                                     if (!current_act_name.contains("SettingActivity") && !show_complete_tip) {
                                         show_complete_tip = true;
                                         OtaTopSnackBar.make(DownLoadService.this, "升级包下载完成，可进行系统升级", OtaTopSnackBar
@@ -246,7 +246,7 @@ public class DownLoadService extends Service {
                                     OtaTool.RedTips =1;
                                     EventBus.getDefault().post(new DownloadEvent(OtaConstant.DOWNLOAD_COMPLETE,"下载完成"));
 
-
+                                    OtaTool.setNowVersion(getApplicationContext(), OtaTool.getProperty("ro.cvte.customer.version", "unknow"));
                                 }else {//ota校验失败
 
                                     OtaLog.LOGOta("下载完成", "固件包md5校验失败");

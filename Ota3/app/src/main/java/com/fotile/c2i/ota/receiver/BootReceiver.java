@@ -18,13 +18,18 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         String oldVersion=  OtaTool.getNowVersion(context);
         String nowVersion = OtaTool.getProperty("ro.cvte.customer.version", "unknow");
-        if(oldVersion!=null && oldVersion.equals(nowVersion)&& !oldVersion.equals("unknow")){//升级版本失败
-            OtaLog.LOGOta("=== 系统升级失败","系统升级失败----------------------------------");
+        String updateState = OtaTool.getLastUpdateState(context);
+        if(oldVersion!=null && oldVersion.equals(nowVersion)&& !oldVersion.equals("unknow") && updateState.equals(OtaConstant.UPDATEING)){//升级版本失败
+            OtaLog.LOGOta("=== 系统升级失败","系统升级失败----------------------------------"+oldVersion+"当前版本"+nowVersion+" 升级状态"+updateState);
             OtaTopSnackBar.make(context, "系统升级失败", OtaTopSnackBar.LENGTH_LONG).show();
-        }else {
+        }else if(oldVersion!=null && oldVersion.equals(nowVersion)&& !oldVersion.equals("unknow")&& updateState.equals(OtaConstant.UPDATEFINISH )) {
+            OtaLog.LOGOta("=== 正常重启","正常启动------------------------------------");
+
+        }else if(oldVersion!=null && !oldVersion.equals(nowVersion)&& !oldVersion.equals("unknow")&& updateState.equals(OtaConstant.UPDATEING )){
             OtaTool.delectFile();
             OtaLog.LOGOta("=== 系统升级成功","系统升级成功----------------------------------");
         }
+        OtaTool.setLastUpdateVersion(context,OtaConstant.UPDATEFINISH);
         OtaTool.checkDownloadTips(context);
 
     }

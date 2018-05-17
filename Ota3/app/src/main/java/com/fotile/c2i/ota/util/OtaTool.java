@@ -383,7 +383,7 @@ public class OtaTool {
                     if (!md5_like) {
                         //不通知界面
                         DownloadAction.getInstance().removeAction();
-                        OtaTool.setLastUpdateVersion(context,mInfo,"no");
+                        OtaTool.setLastUpdateVersion(context,mInfo,OtaConstant.UPDATEFINISH);
                         OtaTool.delectFile();
                         //开启下载服务
                         Intent intent = new Intent(context, DownLoadService.class);
@@ -475,7 +475,7 @@ public class OtaTool {
                     if (!md5_like) {
                         //不通知界面
                         DownloadAction.getInstance().removeAction();
-                        OtaTool.setLastUpdateVersion(context,mInfo,"no");
+                        OtaTool.setLastUpdateVersion(context,mInfo,OtaConstant.UPDATEFINISH);
                         OtaTool.delectFile();
                         //开启下载服务
                         Intent intent = new Intent(context, DownLoadService.class);
@@ -595,13 +595,13 @@ public class OtaTool {
     }
     /**获取是否下载**/
     public static String getLastUpdateState(final Context context){
-        if (context == null)return "no";
+        if (context == null)return OtaConstant.UPDATEFINISH;
         Context context1 = context.getApplicationContext();
         SharedPreferences sharedPreferences = context1.getSharedPreferences(LAST_UPDATE_VERSION,MODE_PRIVATE);
         if(sharedPreferences == null){
-            return "no";
+            return OtaConstant.UPDATEFINISH;
         }
-        return sharedPreferences.getString(ISDOWM,"no");
+        return sharedPreferences.getString(ISDOWM,OtaConstant.UPDATEFINISH);
     }
     /**获取最新版本的MD5**/
     public static String getLastUpdateVersionMD5(final Context context){
@@ -633,6 +633,13 @@ public class OtaTool {
         }
         return sharedPreferences.getString(NOW_VERSION,"");
     }
+    /** 开始升级的标志*/
+    public static void updateIng(final Context context){
+        if (context == null)return ;
+        OtaTool.setLastUpdateVersion(context,OtaConstant.UPDATEING);
+    }
+
+
     public static void delectFile(){
         File file = new File(OtaConstant.FILE_NAME_OTA);
         if(file.exists()){

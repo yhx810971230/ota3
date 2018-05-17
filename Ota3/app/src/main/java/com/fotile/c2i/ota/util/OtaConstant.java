@@ -57,6 +57,8 @@ public class OtaConstant {
     public static final String NO_DOWNLOAD = "no_download";
     public static final String TEST_PACKAGE_NAME = "com.OTAceshi";
     public static final String SYS_OF_PACKAGE ="com.fotile.c2i.ota.package";
+    public static final String UPDATEING = "YES";
+    public static final String UPDATEFINISH = "NO";
     //    @Subscribe(threadMode = ThreadMode.MAIN)
     //    public void DownloadEvent(DownloadEvent downloadEvent) {
     //        if(downloadEvent!=null && downloadEvent.getDownload_state().equals(OtaConstant.DOWNLOAD_COMPLETE)){

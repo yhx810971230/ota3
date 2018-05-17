@@ -411,6 +411,7 @@ public class SystemUpgradeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 OtaTool.setNowVersion(getActivity(), OtaTool.getProperty("ro.cvte.customer.version", "unknow"));
+
                 //如果设备没有工作中，才执行ota
                 if (null != otaListener && null != mInfo) {
                     if (OtaTool.fastclick()) {
@@ -585,7 +586,7 @@ public class SystemUpgradeFragment extends Fragment {
             //下载完成界面跳转
             if (null != otaListener && null != mInfo) {
                 otaListener.onDownloadCompleted(mInfo.name);
-                OtaTool.setLastUpdateVersion(getActivity(),mInfo,"yes");
+                OtaTool.setLastUpdateVersion(getActivity(),mInfo,OtaConstant.UPDATEFINISH);
             }
 
 
@@ -665,7 +666,7 @@ public class SystemUpgradeFragment extends Fragment {
 
                 showView(VIEW_STATE_NEW_PACKAGE);
                 if(getActivity()!=null){
-                    OtaTool.setLastUpdateVersion(getActivity(), mInfo, "no");
+                    OtaTool.setLastUpdateVersion(getActivity(), mInfo, OtaConstant.UPDATEFINISH);
                 }
                 int state = DownLoadService.getDownLoadState();
                 OtaLog.LOGOta("===当前获取到固件信息后","当前的工作状态："+state);
