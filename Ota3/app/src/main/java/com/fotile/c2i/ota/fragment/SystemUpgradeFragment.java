@@ -181,7 +181,7 @@ public class SystemUpgradeFragment extends Fragment {
     private boolean is_loading_version_data;
     private int last_view_munber = -1;
     private Timer timer_net;
-
+    private  int retry_time = 0;
 
     public SystemUpgradeFragment(String packageName, Typeface typeface, OtaListener otaListener) {
         check_package_name = packageName;
@@ -571,6 +571,7 @@ public class SystemUpgradeFragment extends Fragment {
             timer_net.cancel();
             timer_net.purge();
             timer_net = null;
+            retry_time = 0;
         }
     }
 
@@ -602,6 +603,7 @@ public class SystemUpgradeFragment extends Fragment {
 
                 if (null == timer_net) {
                     timer_net = new Timer();
+                    retry_time = 0;
                 }
                 timer_net.schedule(new TimerTask() {
                     @Override
@@ -610,11 +612,18 @@ public class SystemUpgradeFragment extends Fragment {
                         if (OtaTool.isNetworkAvailable(getActivity())) {
                             startDownLoadService();
                             cancelNetTimer();
+                        }else {
+                            retry_time++;
+                        }
+                        if(retry_time>=120){
+                            showView(VIEW_DOWN_ERROR);
+                            cancelNetTimer();
                         }
                     }
                 }, 1000, 1000);
             } else {
-                showView(VIEW_DOWN_ERROR);
+                startDownLoadService();
+                cancelNetTimer();
             }
         }
         //下载中
