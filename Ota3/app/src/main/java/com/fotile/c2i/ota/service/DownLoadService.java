@@ -270,7 +270,6 @@ public class DownLoadService extends Service {
                             //md5校验成功才会去执行下载固件包
                             if (checkMcumd5()) {
                                 packageOnly = true;
-                                OtaTool.backMcu();
                                 startDownload();
                             }
                             //校验失败
