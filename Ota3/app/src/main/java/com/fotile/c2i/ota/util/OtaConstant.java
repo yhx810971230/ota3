@@ -27,7 +27,7 @@ public class OtaConstant {
      * MCU升级包文件名称
      */
     public final static String OTANAME_MCU = "mcu.bin";
-
+    public final static String OTANAME_MCU_BACK = "mcu.back";
     public final static String FILE_FOLDER_TEST = Environment.getExternalStorageDirectory().getPath() + "/ota/";
     /**
      * 固件包的下载目录
@@ -43,7 +43,10 @@ public class OtaConstant {
      * mcu包的完整名称
      */
     public final static String FILE_NAME_MCU = FILE_FOLDER + OTANAME_MCU;
-
+    /**
+     * mcu备份包的完整名称
+     */
+    public final static String FILE_NAME_MCU_BACK = FILE_FOLDER + OTANAME_MCU_BACK;
     /**
      * OTA解密密码
      */

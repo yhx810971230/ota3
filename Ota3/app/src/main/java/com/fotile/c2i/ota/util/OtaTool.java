@@ -29,6 +29,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +37,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -681,6 +683,21 @@ public class OtaTool {
     }
 
     /**
+     * 备份MCU文件
+     */
+    public static void backMcu(){
+        File file = new File(OtaConstant.FILE_NAME_MCU_BACK);
+        if (file.exists()) {
+            file.delete();
+        }
+        File filein = new File(OtaConstant.FILE_NAME_MCU);
+        if(!filein.exists()){
+            return;
+        }
+        fileChannelCopy(filein,file);
+    }
+
+    /**
      *判断是否要显示小红点，逻辑，不需要进入设置界面。
      * @writer panyw
      * @param context
@@ -908,6 +925,53 @@ public class OtaTool {
             return metaValue;
         }else {
             return OtaConstant.TEST_PACKAGE_NAME;
+        }
+
+    }
+    public static void fileChannelCopy(File s, File t) {
+
+        FileInputStream fi = null;
+
+        FileOutputStream fo = null;
+
+        FileChannel in = null;
+
+        FileChannel out = null;
+
+        try {
+
+            fi = new FileInputStream(s);
+
+            fo = new FileOutputStream(t);
+
+            in = fi.getChannel();//得到对应的文件通道
+
+            out = fo.getChannel();//得到对应的文件通道
+
+            in.transferTo(0, in.size(), out);//连接两个通道，并且从in通道读取，然后写入out通道
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+                if(fi!= null)
+                fi.close();
+                if(in != null)
+                in.close();
+                if(fo!=null)
+                fo.close();
+                if(out!=null)
+                out.close();
+
+            } catch (IOException e) {
+
+                e.printStackTrace();
+
+            }
+
         }
 
     }
