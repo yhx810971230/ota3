@@ -12,12 +12,9 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
-import com.bumptech.glide.Glide;
 import com.fotile.c2i.ota.R;
 
 import java.util.LinkedList;
-import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 
 /**
@@ -182,9 +179,8 @@ public class OtaTopSnackBar {
             contentTv.setGravity(Gravity.CENTER);
         }
         if (isShowImg) {
-            Glide.with(context).load(avatarId).bitmapTransform(new RoundedCornersTransformation(context, 6, 0,
-                    RoundedCornersTransformation.CornerType.ALL)).into(avatarImg);
-            avatarImg.setVisibility(View.VISIBLE);
+//            Glide.with(context).load(avatarId).bitmapTransform(new RoundedCornersTransformation(context, 6, 0, RoundedCornersTransformation.CornerType.ALL)).into(avatarImg);
+//            avatarImg.setVisibility(View.VISIBLE);
         }
     }
 

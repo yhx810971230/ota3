@@ -2,8 +2,8 @@ package com.fotile.c2i.ota.view;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
 import com.fotile.c2i.ota.util.OtaTool;
 
@@ -14,7 +14,7 @@ import com.fotile.c2i.ota.util.OtaTool;
  * 功能描述：文鼎细黑体TextView
  */
 
-public class OtaThinTextView extends AppCompatTextView {
+public class OtaThinTextView extends TextView {
 
     public OtaThinTextView(Context context) {
         super(context);
