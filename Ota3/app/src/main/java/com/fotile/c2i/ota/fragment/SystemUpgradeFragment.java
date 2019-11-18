@@ -616,7 +616,9 @@ public class SystemUpgradeFragment extends Fragment {
                             retry_time++;
                         }
                         if(retry_time>=120){
-                            showView(VIEW_DOWN_ERROR);
+                            //这里不能在线程中去更新view
+                            //showView(VIEW_DOWN_ERROR);
+                            showViewhandler.sendEmptyMessage(VIEW_DOWN_ERROR);
                             cancelNetTimer();
                         }
                     }
@@ -718,6 +720,10 @@ public class SystemUpgradeFragment extends Fragment {
                 showView(VIEW_STATE_NO_DATA);
             }else if(msg.what == SHOW_TOPBAR){
                 OtaTopSnackBar.make(getActivity(), "请检查网络连接！", OtaTopSnackBar.LENGTH_SHORT).show();
+            }
+            //下载错误
+            else if(msg.what == VIEW_DOWN_ERROR){
+                showView(VIEW_DOWN_ERROR);
             }
         }
 
